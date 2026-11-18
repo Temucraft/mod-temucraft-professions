@@ -1,0 +1,214 @@
+[worldserver]
+########################################
+# mod-temucraft-professions
+########################################
+#
+#    Temucraft.Gathering.Enable
+#        Description: Gathering stats from tools carried in your bags or equipped (mod_temucraft_gathering_tool):
+#                     Finesse (chance for a stack to come with half again as much), Perception (chance for a rare
+#                     reagent that fits the node, mod_temucraft_gathering_rare) and Deftness (faster mining, herb
+#                     gathering and skinning).
+#        Default:     1
+
+Temucraft.Gathering.Enable = 1
+
+#
+#    Temucraft.Gathering.MaxFinesse / MaxPerception / MaxDeftness
+#        Description: Caps, in percent, when several tools add up.
+#        Default:     75, 50, 50
+
+Temucraft.Gathering.MaxFinesse = 75
+Temucraft.Gathering.MaxPerception = 50
+Temucraft.Gathering.MaxDeftness = 50
+
+########################################
+# Crafting stats (phase 2)
+########################################
+#
+#    Temucraft.Crafting.Enable
+#        Description: Multicraft (chance for a craft of stackable goods to make extra) and Resourcefulness (chance,
+#                     for each kind of reagent, to get part of it back). From tools carried in your bags or equipped
+#                     (mod_temucraft_crafting_tool) and from mastery of the recipe (below).
+#        Default:     1
+
+Temucraft.Crafting.Enable = 1
+
+#
+#    Temucraft.Crafting.MaxMulticraft
+#    Temucraft.Crafting.MaxResourcefulness
+#        Description: Caps, in percent.
+#        Default:     50, 50
+
+Temucraft.Crafting.MaxMulticraft = 50
+Temucraft.Crafting.MaxResourcefulness = 50
+
+#
+#    Temucraft.Crafting.MasteryMulticraft
+#    Temucraft.Crafting.MasteryResourcefulness
+#        Description: What a recipe gives once your skill reaches its grey rank, in percent. It grows from nothing at
+#                     the recipe's yellow rank.
+#        Default:     10, 10
+
+Temucraft.Crafting.MasteryMulticraft = 10
+Temucraft.Crafting.MasteryResourcefulness = 10
+
+#
+#    Temucraft.Crafting.MulticraftMaxExtra
+#    Temucraft.Crafting.RefundPct
+#        Description: A Multicraft proc makes 1 to this percent of the crafted amount extra (at least 1). A
+#                     Resourcefulness proc gives back this percent of that reagent (at least 1).
+#        Default:     100, 30
+
+Temucraft.Crafting.MulticraftMaxExtra = 100
+Temucraft.Crafting.RefundPct = 30
+
+#
+#    Temucraft.Crafting.Announce
+#        Description: Says in chat what Multicraft made and Resourcefulness saved.
+#        Default:     1
+
+Temucraft.Crafting.Announce = 1
+
+########################################
+# Knowledge, specializations and concentration (phase 3)
+########################################
+#
+#    Temucraft.Knowledge.Enable
+#        Description: Knowledge points per profession: first craft of each recipe (+1), first time gathering each
+#                     kind of item (+1), each 75 skill points (below). Spent with .knowledge on three
+#                     specializations per profession: Finesse/Perception/Deftness for gathering, Multicraft/
+#                     Resourcefulness/Deep Focus (concentration) for crafting.
+#        Default:     1
+
+Temucraft.Knowledge.Enable = 1
+
+#
+#    Temucraft.Knowledge.Ranks
+#    Temucraft.Knowledge.PercentPerRank
+#    Temucraft.Knowledge.SkillMilestonePoints
+#        Description: Ranks per specialization (one point each), percent each rank adds to its stat, and the points
+#                     for every 75 skill.
+#        Default:     10, 2, 3
+
+Temucraft.Knowledge.Ranks = 10
+Temucraft.Knowledge.PercentPerRank = 2
+Temucraft.Knowledge.SkillMilestonePoints = 3
+
+#
+#    Temucraft.Knowledge.ResetCost
+#    Temucraft.Knowledge.Announce
+#        Description: Copper to take back a profession's points (0 = free), and saying in chat when knowledge is earned.
+#        Default:     0, 1
+
+Temucraft.Knowledge.ResetCost = 0
+Temucraft.Knowledge.Announce = 1
+
+#
+#    Temucraft.Concentration.Max
+#    Temucraft.Concentration.PerHour
+#    Temucraft.Concentration.CostPerCraft
+#    Temucraft.Concentration.DeepFocusPercentPerRank
+#        Description: Concentration pool per crafting profession, how much it fills per hour (also offline), what a
+#                     craft spends with concentration switched on (.knowledge) - its Multicraft and Resourcefulness
+#                     rolls then all succeed - and what each Deep Focus rank takes off the cost and adds to the pool.
+#        Default:     1000, 20, 50, 5
+
+Temucraft.Concentration.Max = 1000
+Temucraft.Concentration.PerHour = 20
+Temucraft.Concentration.CostPerCraft = 50
+Temucraft.Concentration.DeepFocusPercentPerRank = 5
+
+########################################
+# Crafted quality and recrafting
+########################################
+#
+#    Temucraft.Quality.Enable
+#        Description: Gear you craft gets a quality rank, 1 (Rough) to 5 (Masterwork): from your skill past the
+#                     recipe's yellow rank, luck, and concentration (always 5). The item's random enchantment is
+#                     rolled as many times as its rank and the strongest kept. .recraft <item> crafts a piece you
+#                     made again with your current skill; you keep the better result.
+#        Default:     1
+
+Temucraft.Quality.Enable = 1
+
+#
+#    Temucraft.Quality.RecraftReagentPct
+#    Temucraft.Quality.Announce
+#        Description: Percent of each reagent a recraft costs (at least 1), and saying the quality in chat.
+#        Default:     50, 1
+
+Temucraft.Quality.RecraftReagentPct = 50
+Temucraft.Quality.Announce = 1
+
+########################################
+# Profession equipment
+########################################
+#
+#    Temucraft.ProfGear.Enable
+#        Description: A tool and two accessory slots per profession, kept by the server apart from bags and gear.
+#                     Worn equipment (mod_temucraft_profgear_item) adds profession skill and the gathering and
+#                     crafting stats. .profgear (menu) or the TemucraftProfGear addon (client/AddOns).
+#        Default:     1
+
+Temucraft.ProfGear.Enable = 1
+
+########################################
+# mod-temucraft-profession-perks
+########################################
+#
+#    Temucraft.ProfessionPerks.Enable
+#        Description: Turn the module on or off.
+#        Default:     1
+#
+#    Temucraft.ProfessionPerks.Mixology
+#        Description: Alchemists' elixirs and flasks are stronger (each spell's Mixology bonus, 30% unless listed in
+#                     spell_mixology) and last longer: every elixir and flask, not only Northrend recipes they know.
+#        Default:     1
+#
+#    Temucraft.ProfessionPerks.Mixology.MinSkill
+#        Description: Alchemy skill needed.
+#        Default:     1
+#
+#    Temucraft.ProfessionPerks.Mixology.Duration
+#        Description: Duration multiplier.
+#        Default:     2.0
+#
+#    Temucraft.ProfessionPerks.RepairAll
+#        Description: Blacksmiths can mend all their gear for free with .repairall.
+#        Default:     1
+#
+#    Temucraft.ProfessionPerks.RepairAll.MinSkill
+#        Description: Blacksmithing skill needed.
+#        Default:     75
+#
+#    Temucraft.ProfessionPerks.RepairAll.Cooldown
+#        Description: "skill:seconds" steps: from that Blacksmithing skill, that wait between repairs.
+#        Default:     "75:28800 225:14400 375:7200" (8 h, 4 h from 225, 2 h from 375)
+#
+#    Temucraft.ProfessionPerks.Toughness
+#        Description: Miners get more maximum health: Percent for every SkillStep of Mining.
+#        Default:     1 (1% per 75 skill, 6% at 450)
+#
+#    Temucraft.ProfessionPerks.BeastsOfTheWild
+#        Description: Skinners (and their pets) deal more damage to beasts: Percent for every SkillStep of Skinning.
+#        Default:     1 (1% per 75 skill, 6% at 450)
+#
+#    Temucraft.ProfessionPerks.Scavenging
+#        Description: When a tailor loots cloth from a creature, Chance (%) for one more piece.
+#        Default:     1 (25%)
+
+Temucraft.ProfessionPerks.Enable = 1
+Temucraft.ProfessionPerks.Mixology = 1
+Temucraft.ProfessionPerks.Mixology.MinSkill = 1
+Temucraft.ProfessionPerks.Mixology.Duration = 2.0
+Temucraft.ProfessionPerks.RepairAll = 1
+Temucraft.ProfessionPerks.RepairAll.MinSkill = 75
+Temucraft.ProfessionPerks.RepairAll.Cooldown = "75:28800 225:14400 375:7200"
+Temucraft.ProfessionPerks.Toughness = 1
+Temucraft.ProfessionPerks.Toughness.Percent = 1.0
+Temucraft.ProfessionPerks.Toughness.SkillStep = 75
+Temucraft.ProfessionPerks.BeastsOfTheWild = 1
+Temucraft.ProfessionPerks.BeastsOfTheWild.Percent = 1.0
+Temucraft.ProfessionPerks.BeastsOfTheWild.SkillStep = 75
+Temucraft.ProfessionPerks.Scavenging = 1
+Temucraft.ProfessionPerks.Scavenging.Chance = 25.0
