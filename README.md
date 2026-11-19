@@ -114,3 +114,5 @@ adds the per-profession perks above.
 
 Player-facing texts are in `module_string` (module `mod-temucraft-profession-perks`); translations go in
 `module_string_locale`.
+
+Part of the Temucraft modules for AzerothCore 3.3.5a.
