@@ -8,7 +8,8 @@ INSERT INTO `rbac_permissions` (`id`, `name`) VALUES
 (102750, 'Command: temucraft knowledge'),
 (102751, 'Command: temucraft profgear'),
 (102752, 'Command: temucraft repairall'),
-(102753, 'Command: temucraft recraft');
+(102753, 'Command: temucraft recraft'),
+(102754, 'Command: temucraft profslots');
 INSERT INTO `rbac_linked_permissions` (`id`, `linkedId`) VALUES
 (192, 102750),
 (1014, 102750),
@@ -17,4 +18,6 @@ INSERT INTO `rbac_linked_permissions` (`id`, `linkedId`) VALUES
 (192, 102752),
 (1014, 102752),
 (192, 102753),
-(1014, 102753);
+(1014, 102753),
+(192, 102754),
+(1014, 102754);

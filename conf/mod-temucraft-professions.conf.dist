@@ -305,3 +305,15 @@ Temucraft.Treasures.SparkleRange = 80
 Temucraft.Treasures.Interval = 1000
 Temucraft.Treasures.Dwarf.GoldPercent = 20
 Temucraft.Treasures.Dwarf.ChestGoldPercent = 50
+
+#
+#    Temucraft.ProfessionSlots.Enable
+#    Temucraft.ProfessionSlots.Base
+#        Description: Every character can learn Base primary professions; more are unlocked one at a time by any
+#                     spell that has the script spell_temucraft_profession_slot (spell_script_names), up to
+#                     MaxPrimaryTradeSkill in worldserver.conf (set it to 11 for every profession).
+#                     GMs: .temucraft profslots [add | remove | set <n>].
+#        Default:     1, 2
+
+Temucraft.ProfessionSlots.Enable = 1
+Temucraft.ProfessionSlots.Base = 2

@@ -146,3 +146,12 @@ the character window) as a bag grid.
 - Dwarves: Treasure Finding is no longer a tracking spell everyone has for free. Dwarves get 20% more gold from any
   loot and 50% more from treasure chests. The spell's text in patch-T says so.
 
+## Profession slots
+
+- Every character can learn `Temucraft.ProfessionSlots.Base` (2) primary professions.
+- More are unlocked one at a time, up to `MaxPrimaryTradeSkill` in worldserver.conf (set it to **11** for every
+  profession). The server decides how: add the script to any spell, for example an item's spell or a quest reward spell:
+  `INSERT INTO spell_script_names (spell_id, ScriptName) VALUES (<spell>, 'spell_temucraft_profession_slot');`
+  Each cast gives one more slot (the cast fails with a message when the character has them all).
+- GMs: `.temucraft profslots` shows the selected player's slots; `add`, `remove`, `set <n>` change the unlocked ones.
+- SQL: `mod_temucraft_profession_slots` (characters). RBAC 102754.
