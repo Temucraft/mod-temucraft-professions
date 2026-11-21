@@ -33,7 +33,7 @@ using namespace Acore::ChatCommands;
 
 namespace
 {
-    struct QualitySettings { bool enable = true; uint32 recraftPct = 50; bool announce = true; } qcfg;
+    struct QualitySettings { bool enable = true; uint32 recraftPct = 50; bool announce = true; uint32 luckOne = 25, luckTwo = 5; } qcfg;
 
     char const* const RANK_NAMES[6] = { "", "1 (Rough)", "2 (Fine)", "3 (Superior)", "4 (Exceptional)", "5 (Masterwork)" };
 
@@ -65,10 +65,10 @@ namespace
         uint32 skill = player->GetSkillValue(ability->SkillLine);
         uint32 yellow = ability->TrivialSkillLineRankLow, grey = ability->TrivialSkillLineRankHigh;
         float mastery = grey > yellow && skill > yellow ? std::min(1.0f, float(skill - yellow) / float(grey - yellow)) : 0.0f;
-        // 1 + up to 2 from mastery, then luck: 25% for one rank more, 5% for two
+        // 1 + up to 2 from mastery, then luck: Temucraft.Quality.LuckOneRank % for one rank more, LuckTwoRanks % for two
         uint32 rank = 1 + uint32(std::floor(mastery * 2.0f + 0.25f));
         uint32 luck = urand(1, 100);
-        rank += luck <= 5 ? 2 : luck <= 30 ? 1 : 0;
+        rank += luck <= qcfg.luckTwo ? 2 : luck <= qcfg.luckTwo + qcfg.luckOne ? 1 : 0;
         return std::min<uint32>(rank, 5);
     }
 
@@ -149,6 +149,8 @@ public:
         qcfg.enable = sConfigMgr->GetOption<bool>("Temucraft.Quality.Enable", true);
         qcfg.recraftPct = std::min<uint32>(sConfigMgr->GetOption<uint32>("Temucraft.Quality.RecraftReagentPct", 50), 100);
         qcfg.announce = sConfigMgr->GetOption<bool>("Temucraft.Quality.Announce", true);
+        qcfg.luckOne = sConfigMgr->GetOption<uint32>("Temucraft.Quality.LuckOneRank", 25);
+        qcfg.luckTwo = sConfigMgr->GetOption<uint32>("Temucraft.Quality.LuckTwoRanks", 5);
     }
 };
 

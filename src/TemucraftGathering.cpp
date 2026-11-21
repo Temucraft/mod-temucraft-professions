@@ -49,6 +49,7 @@ namespace
     {
         bool enable = true;
         int32 maxFinesse = 75, maxPerception = 50, maxDeftness = 50;
+        uint32 finesseBonus = 50;   // percent more of a stack on a Finesse proc
     } sSet;
 
     std::vector<Tool> sTools;
@@ -62,6 +63,7 @@ namespace
         sSet.maxFinesse = sConfigMgr->GetOption<int32>("Temucraft.Gathering.MaxFinesse", 75);
         sSet.maxPerception = sConfigMgr->GetOption<int32>("Temucraft.Gathering.MaxPerception", 50);
         sSet.maxDeftness = sConfigMgr->GetOption<int32>("Temucraft.Gathering.MaxDeftness", 50);
+        sSet.finesseBonus = sConfigMgr->GetOption<uint32>("Temucraft.Gathering.FinesseBonusPercent", 50);
     }
 
     void LoadData()
@@ -214,7 +216,7 @@ public:
                     continue;
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemid);
                 uint32 max = proto && proto->GetMaxStackSize() > 0 ? proto->GetMaxStackSize() : item.count;
-                item.count = std::min<uint32>(max, item.count + std::max<uint32>(1, item.count / 2));
+                item.count = std::min<uint32>(max, item.count + std::max<uint32>(1, item.count * sSet.finesseBonus / 100));
             }
 
         if (s.perception > 0 && roll_chance_i(s.perception) && loot->items.size() + loot->quest_items.size() < 18)

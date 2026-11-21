@@ -1,5 +1,6 @@
 -- mod-temucraft-professions: gathering stats from tools. Re-runnable.
 -- Skill: 182 Herbalism, 186 Mining, 393 Skinning, 356 Fishing, 0 = all gathering. Values are percent.
+SET @GatherTool := 608100;
 CREATE TABLE IF NOT EXISTS `mod_temucraft_gathering_tool` (
   `ItemID` int unsigned NOT NULL, `Skill` smallint unsigned NOT NULL DEFAULT 0,
   `Finesse` tinyint NOT NULL DEFAULT 0, `Perception` tinyint NOT NULL DEFAULT 0, `Deftness` tinyint NOT NULL DEFAULT 0,
@@ -19,9 +20,9 @@ INSERT INTO `mod_temucraft_gathering_tool` (`ItemID`, `Skill`, `Finesse`, `Perce
 (44050,  356, 15, 10, 0,  'Mastercraft Kalu''ak Fishing Pole'),
 (45991,  356, 15, 5,  0,  'Bone Fishing Pole'),
 (45992,  356, 15, 5,  0,  'Jeweled Fishing Pole'),
-(608100, 182, 5,  0,  10, 'Herbalist''s Sickle'),
-(608101, 186, 10, 5,  10, 'Prospector''s Pick'),
-(608102, 393, 10, 5,  10, 'Keen Skinning Knife');
+(@GatherTool, 182, 5,  0,  10, 'Herbalist''s Sickle'),
+(@GatherTool+1, 186, 10, 5,  10, 'Prospector''s Pick'),
+(@GatherTool+2, 393, 10, 5,  10, 'Keen Skinning Knife');
 
 -- rare reagents found with Perception, by skill and node level (skinning and fishing: your skill)
 CREATE TABLE IF NOT EXISTS `mod_temucraft_gathering_rare` (
@@ -51,14 +52,14 @@ INSERT INTO `mod_temucraft_gathering_rare` (`Skill`, `MinNode`, `MaxNode`, `Item
 (393, 375, 450, 44128, 6, 'Arctic Fur'), (393, 375, 450, 38557, 6, 'Icy Dragonscale'), (393, 375, 450, 38558, 6, 'Nerubian Chitin');
 
 -- three new tools, sold wherever Mining Picks are sold
-DELETE FROM `item_template` WHERE `entry` IN (608100, 608101, 608102);
+DELETE FROM `item_template` WHERE `entry` IN (@GatherTool, @GatherTool+1, @GatherTool+2);
 INSERT INTO `item_template` (`entry`, `class`, `subclass`, `SoundOverrideSubclass`, `name`, `displayid`, `Quality`, `BuyCount`, `BuyPrice`, `SellPrice`, `InventoryType`, `ItemLevel`, `RequiredSkill`, `RequiredSkillRank`, `maxcount`, `stackable`, `bonding`, `description`, `Material`, `VerifiedBuild`) VALUES
-(608100, 15, 0, -1, 'Herbalist''s Sickle', 7393, 2, 1, 2500, 625, 0, 10, 182, 1, 1, 1, 0, 'Carry it while gathering herbs: Finesse +5%, Deftness +10%.', 1, 0),
-(608101, 15, 0, -1, 'Prospector''s Pick', 6795, 2, 1, 5000, 1250, 0, 20, 186, 1, 1, 1, 0, 'Carry it while mining: Finesse +10%, Perception +5%, Deftness +10%.', 1, 0),
-(608102, 15, 0, -1, 'Keen Skinning Knife', 6623, 2, 1, 5000, 1250, 0, 20, 393, 1, 1, 1, 0, 'Carry it while skinning: Finesse +10%, Perception +5%, Deftness +10%.', 1, 0);
-DELETE FROM `npc_vendor` WHERE `item` IN (608100, 608101, 608102);
+(@GatherTool, 15, 0, -1, 'Herbalist''s Sickle', 7393, 2, 1, 2500, 625, 0, 10, 182, 1, 1, 1, 0, 'Carry it while gathering herbs: Finesse +5%, Deftness +10%.', 1, 0),
+(@GatherTool+1, 15, 0, -1, 'Prospector''s Pick', 6795, 2, 1, 5000, 1250, 0, 20, 186, 1, 1, 1, 0, 'Carry it while mining: Finesse +10%, Perception +5%, Deftness +10%.', 1, 0),
+(@GatherTool+2, 15, 0, -1, 'Keen Skinning Knife', 6623, 2, 1, 5000, 1250, 0, 20, 393, 1, 1, 1, 0, 'Carry it while skinning: Finesse +10%, Perception +5%, Deftness +10%.', 1, 0);
+DELETE FROM `npc_vendor` WHERE `item` IN (@GatherTool, @GatherTool+1, @GatherTool+2);
 INSERT IGNORE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`, `VerifiedBuild`)
-SELECT DISTINCT `entry`, 0, i.`item`, 0, 0, 0, 0 FROM `npc_vendor` v JOIN (SELECT 608100 AS `item` UNION SELECT 608101 UNION SELECT 608102) i
+SELECT DISTINCT `entry`, 0, i.`item`, 0, 0, 0, 0 FROM `npc_vendor` v JOIN (SELECT @GatherTool AS `item` UNION SELECT @GatherTool+1 UNION SELECT @GatherTool+2) i
 WHERE v.`item` = 2901;
 
 -- the hidden Deftness aura: cast-time modifier for a spell family no real spell uses; the module points it at the

@@ -70,6 +70,7 @@ namespace
         uint32 ranks = 10;
         int32 perRank = 2;
         uint32 milestone = 3;
+        uint32 milestoneStep = 75, milestoneMax = 450;
         uint32 resetCost = 0;
         bool announce = true;
         float concentrationMax = 1000.0f;
@@ -147,7 +148,7 @@ namespace
     {
         if (!Profession(skill))
             return;
-        for (uint32 tier = 75; tier <= value && tier <= 450; tier += 75)
+        for (uint32 tier = kcfg.milestoneStep; tier <= value && tier <= kcfg.milestoneMax; tier += kcfg.milestoneStep)
             Award(player, skill, MILESTONE_KEY + tier, kcfg.milestone, "reached " + std::to_string(tier) + " skill");
     }
 
@@ -360,6 +361,8 @@ public:
         kcfg.ranks = sConfigMgr->GetOption<uint32>("Temucraft.Knowledge.Ranks", 10);
         kcfg.perRank = sConfigMgr->GetOption<int32>("Temucraft.Knowledge.PercentPerRank", 2);
         kcfg.milestone = sConfigMgr->GetOption<uint32>("Temucraft.Knowledge.SkillMilestonePoints", 3);
+        kcfg.milestoneStep = std::max<uint32>(1, sConfigMgr->GetOption<uint32>("Temucraft.Knowledge.SkillMilestoneStep", 75));
+        kcfg.milestoneMax = sConfigMgr->GetOption<uint32>("Temucraft.Knowledge.SkillMilestoneMax", 450);
         kcfg.resetCost = sConfigMgr->GetOption<uint32>("Temucraft.Knowledge.ResetCost", 0);
         kcfg.announce = sConfigMgr->GetOption<bool>("Temucraft.Knowledge.Announce", true);
         kcfg.concentrationMax = sConfigMgr->GetOption<float>("Temucraft.Concentration.Max", 1000.0f);

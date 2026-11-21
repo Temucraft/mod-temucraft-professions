@@ -212,3 +212,38 @@ Temucraft.ProfessionPerks.BeastsOfTheWild.Percent = 1.0
 Temucraft.ProfessionPerks.BeastsOfTheWild.SkillStep = 75
 Temucraft.ProfessionPerks.Scavenging = 1
 Temucraft.ProfessionPerks.Scavenging.Chance = 25.0
+
+#
+#    Temucraft.Gathering.FinesseBonusPercent
+#        Description: Finesse: percent more of a gathered stack when it procs (at least one more).
+#        Default:     50
+
+Temucraft.Gathering.FinesseBonusPercent = 50
+
+#
+#    Temucraft.Knowledge.SkillMilestoneStep
+#        Description: Knowledge points are given every this many skill points.
+#        Default:     75
+
+Temucraft.Knowledge.SkillMilestoneStep = 75
+
+#
+#    Temucraft.Knowledge.SkillMilestoneMax
+#        Description: Highest skill that still gives a milestone.
+#        Default:     450
+
+Temucraft.Knowledge.SkillMilestoneMax = 450
+
+#
+#    Temucraft.Quality.LuckOneRank
+#        Description: Percent chance a crafted item rolls one quality rank more.
+#        Default:     25
+
+Temucraft.Quality.LuckOneRank = 25
+
+#
+#    Temucraft.Quality.LuckTwoRanks
+#        Description: Percent chance a crafted item rolls two quality ranks more.
+#        Default:     5
+
+Temucraft.Quality.LuckTwoRanks = 5
