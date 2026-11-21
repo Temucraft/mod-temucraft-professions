@@ -130,4 +130,4 @@ the character window) as a bag grid.
   the box) out into your bags, then Create works as usual.
 - Without the addon: `.temucraft profgear` -> Reagent bag.
 - Holds `Temucraft.ReagentBag.Slots` stacks (28) of stackable trade goods, reagents and misc reagents (not limited or
-  timed items). Tables `mod_temucraft_reagent_bag` and `mod_temucraft_reagent_bag_settings` (characters).
+  timed items). Tables `mod_temucraft_reagent_bag` and `mod_temucraft_character_setting` (setting `reagentbag`) (characters).

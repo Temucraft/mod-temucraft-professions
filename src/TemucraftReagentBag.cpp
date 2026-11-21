@@ -268,7 +268,7 @@ bool TemucraftReagentBagMessage(Player* player, std::vector<std::string_view> co
     {
         ReagentStore& bag = BagOf(player);
         bag.autoDeposit = num(1) != 0;
-        CharacterDatabase.Execute("REPLACE INTO `mod_temucraft_reagent_bag_settings` (`guid`, `auto`) VALUES ({}, {})", player->GetGUID().GetCounter(), bag.autoDeposit ? 1 : 0);
+        CharacterDatabase.Execute("REPLACE INTO `mod_temucraft_character_setting` (`guid`, `setting`, `value`) VALUES ({}, 'reagentbag', {})", player->GetGUID().GetCounter(), bag.autoDeposit ? 1 : 0);
     }
     else if (c == 'W')                                              // RW entry count: take out
     {
@@ -309,8 +309,8 @@ public:
         bag.autoDeposit = cfg.autoDefault;
         if (QueryResult r = CharacterDatabase.Query("SELECT `item`, `count` FROM `mod_temucraft_reagent_bag` WHERE `guid` = {}", guid))
             do bag.items[(*r)[0].Get<uint32>()] = (*r)[1].Get<uint32>(); while (r->NextRow());
-        if (QueryResult r = CharacterDatabase.Query("SELECT `auto` FROM `mod_temucraft_reagent_bag_settings` WHERE `guid` = {}", guid))
-            bag.autoDeposit = (*r)[0].Get<uint8>() != 0;
+        if (QueryResult r = CharacterDatabase.Query("SELECT `value` FROM `mod_temucraft_character_setting` WHERE `guid` = {} AND `setting` = 'reagentbag'", guid))
+            bag.autoDeposit = (*r)[0].Get<int32>() != 0;
     }
 
     void OnPlayerLogout(Player* player) override
@@ -322,7 +322,7 @@ public:
     void OnPlayerDelete(ObjectGuid guid, uint32 /*account*/) override
     {
         CharacterDatabase.Execute("DELETE FROM `mod_temucraft_reagent_bag` WHERE `guid` = {}", guid.GetCounter());
-        CharacterDatabase.Execute("DELETE FROM `mod_temucraft_reagent_bag_settings` WHERE `guid` = {}", guid.GetCounter());
+        CharacterDatabase.Execute("DELETE FROM `mod_temucraft_character_setting` WHERE `guid` = {} AND `setting` = 'reagentbag'", guid.GetCounter());
     }
 
     void Queue(Player* player, Item* item, uint32 count)
