@@ -6,6 +6,7 @@ void AddTemucraftQualityScripts();
 void AddTemucraftProfGearScripts();
 void AddTemucraftReagentBagScripts();
 void AddTemucraftProfessionPerksScripts();
+void AddTemucraftTreasuresScripts();
 
 void Addmod_temucraft_professionsScripts()
 {
@@ -16,4 +17,5 @@ void Addmod_temucraft_professionsScripts()
     AddTemucraftProfGearScripts();
     AddTemucraftReagentBagScripts();
     AddTemucraftProfessionPerksScripts();
+    AddTemucraftTreasuresScripts();   // instant chests, minimap and sparkle for herbs/ore/treasure, dwarves
 }

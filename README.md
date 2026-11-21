@@ -131,3 +131,18 @@ the character window) as a bag grid.
 - Without the addon: `.temucraft profgear` -> Reagent bag.
 - Holds `Temucraft.ReagentBag.Slots` stacks (28) of stackable trade goods, reagents and misc reagents (not limited or
   timed items). Tables `mod_temucraft_reagent_bag` and `mod_temucraft_character_setting` (setting `reagentbag`) (characters).
+
+## Treasures, herbs and ore
+
+`src/TemucraftTreasures.cpp`, settings `Temucraft.Treasures.*`:
+
+- Chests and other objects opened with the generic "Opening" spells (3365, 6477, 6478, 22810, 26868) open at once.
+  The release patch-T Spell.dbc has them instant too, so the cast bar matches. Battleground captures (21651, 8 s)
+  and special quest objects (5 s) are not changed.
+- Herbs, ore veins and treasure chests always show on everyone's minimap: the tracking bits of Find Herbs, Find
+  Minerals and Find Treasure are kept on (put back each second if a tracking change clears them).
+- They sparkle in the world, like quest objects, for players within 80 yards. The server tells each client this
+  for the objects it can see (their dynamic flags); nothing changes in the database.
+- Dwarves: Treasure Finding is no longer a tracking spell everyone has for free. Dwarves get 20% more gold from any
+  loot and 50% more from treasure chests. The spell's text in patch-T says so.
+

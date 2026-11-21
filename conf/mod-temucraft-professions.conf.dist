@@ -270,3 +270,38 @@ Temucraft.Quality.LuckOneRank = 25
 #        Default:     5
 
 Temucraft.Quality.LuckTwoRanks = 5
+
+###################################################################################################
+# Treasures, herbs and ore (TemucraftTreasures.cpp)
+###################################################################################################
+#
+#    Temucraft.Treasures.InstantOpen
+#        Description: Chests and other objects opened with the generic "Opening" spells open at once. The client
+#                     patch (patch-T Spell.dbc) has the same change, so the cast bar matches. Restart needed.
+#        Default:     1
+#
+#    Temucraft.Treasures.Minimap
+#        Description: Herbs, ore veins and treasure chests always show on everyone's minimap, whatever tracking
+#                     is chosen.
+#        Default:     1
+#
+#    Temucraft.Treasures.Sparkle
+#        Description: Herbs, ore veins and treasure chests sparkle in the world (like quest objects) for players
+#                     within SparkleRange yards.
+#        Default:     1, 80
+#
+#    Temucraft.Treasures.Interval
+#        Description: Milliseconds between the checks for the two settings above (250 at least).
+#        Default:     1000
+#
+#    Temucraft.Treasures.Dwarf.GoldPercent / .ChestGoldPercent
+#        Description: Dwarves' Treasure Finding: this much more gold from any loot, and from treasure chests.
+#        Default:     20, 50
+
+Temucraft.Treasures.InstantOpen = 1
+Temucraft.Treasures.Minimap = 1
+Temucraft.Treasures.Sparkle = 1
+Temucraft.Treasures.SparkleRange = 80
+Temucraft.Treasures.Interval = 1000
+Temucraft.Treasures.Dwarf.GoldPercent = 20
+Temucraft.Treasures.Dwarf.ChestGoldPercent = 50
