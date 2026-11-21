@@ -120,11 +120,11 @@ namespace
             s.perception += t.perception;
             s.deftness += t.deftness;
         }
-        // Profession equipment worn (.profgear)
+        // Profession equipment worn (.temucraft profgear)
         s.finesse += TemucraftProfGearStat(player, skill, GEAR_FINESSE);
         s.perception += TemucraftProfGearStat(player, skill, GEAR_PERCEPTION);
         s.deftness += TemucraftProfGearStat(player, skill, GEAR_DEFTNESS);
-        // Specializations (.knowledge); the Deftness aura covers every gathering skill, so it takes the best one
+        // Specializations (.temucraft knowledge); the Deftness aura covers every gathering skill, so it takes the best one
         if (skill)
         {
             s.finesse += TemucraftSpecBonus(player, skill, PROF_STAT_FINESSE);

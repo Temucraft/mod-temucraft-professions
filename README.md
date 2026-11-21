@@ -44,7 +44,7 @@ Each profession has three slots kept by the server, apart from bags and gear: a 
 Wearing an item takes it out of your bags (its enchantments, creator, durability and crafted quality are kept);
 taking it off gives the same item back. Worn equipment adds profession **skill** and the gathering or crafting stats.
 
-- `.profgear` opens a menu; the **TemucraftProfGear** addon (`client/AddOns`) adds a panel to the character window
+- `.temucraft profgear` opens a menu; the **TemucraftProfGear** addon (`client/AddOns`) adds a panel to the character window
   (`/profgear`): alt-right-click equipment in your bags to wear it, right-click a slot to take it off.
 - Equipment: `mod_temucraft_profgear_item`. The existing tools count as tools, plus a tool and an accessory per
   profession in three tiers: Proficient (skill 1), Expert (300) and Master (375), sold by the vendors who sell each
@@ -54,7 +54,7 @@ taking it off gives the same item back. Worn equipment adds profession **skill**
 ### Knowledge, specializations and concentration
 
 Each profession earns **knowledge**: the first craft of each recipe (+1), the first time you gather each kind of item
-(+1) and every 75 skill points (+3, counted for skill you already have). `.knowledge` opens a menu to spend it on
+(+1) and every 75 skill points (+3, counted for skill you already have). `.temucraft knowledge` opens a menu to spend it on
 three **specializations** per profession, 10 ranks each, +2% per rank:
 
 - gathering: Fine Touch (Finesse), Keen Eye (Perception), Swift Hands (Deftness)
@@ -68,7 +68,7 @@ Tables (characters): `mod_temucraft_knowledge`, `_first`, `_spec`, `mod_temucraf
 
 Gear you craft gets a **quality rank**, 1 (Rough) to 5 (Masterwork): from how far your skill is past the recipe's
 yellow rank, a little luck, and concentration (always 5). The client can't show quality icons, so quality works
-through the random enchantment: it is rolled as many times as the rank and the strongest is kept. `.recraft <item>`
+through the random enchantment: it is rolled as many times as the rank and the strongest is kept. `.temucraft recraft <item>`
 crafts a piece you made again for half its reagents with your current skill, keeping the better result. Table
 (characters): `mod_temucraft_crafted_item`.
 
@@ -92,7 +92,7 @@ keeping up while levelling. Each perk only works while the profession is known.
 | Profession | Perk |
 |---|---|
 | Alchemy | **Mixology** for every alchemist from skill 1: all elixirs and flasks (not only the Northrend recipes you know) get their Mixology bonus and last twice as long |
-| Blacksmithing | **Repair All**: `.repairall` mends all your gear for free; every 8 hours, 4 from skill 225, 2 from 375 |
+| Blacksmithing | **Repair All**: `.temucraft repairall` mends all your gear for free; every 8 hours, 4 from skill 225, 2 from 375 |
 | Mining | **Toughness**: +1% maximum health per 75 skill (6% at 450), on top of the stock stamina bonus |
 | Skinning | **Beasts of the Wild**: +1% damage done to beasts per 75 skill, pets included |
 | Tailoring | **Cloth Scavenging**: when cloth drops from a creature, a 25% chance for one more piece |

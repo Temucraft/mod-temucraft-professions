@@ -7,7 +7,7 @@
  * "of the Owl"...) is rolled as many times as its rank and the strongest is kept. Gear without a random enchantment
  * pool still records its rank (for recrafting later), without a bonus.
  *
- * .recraft <item link>  crafts a piece you made again for Temucraft.Quality.RecraftReagentPct percent of its
+ * .temucraft recraft <item link>  crafts a piece you made again for Temucraft.Quality.RecraftReagentPct percent of its
  *                       reagents, with your current skill: you keep the better of the old and new results.
  */
 
@@ -163,7 +163,7 @@ public:
     {
         static ChatCommandTable commandTable =
         {
-            { "recraft", HandleRecraft, SEC_PLAYER, Console::No },
+            { "temucraft recraft", HandleRecraft, 102753, Console::No },
         };
         return commandTable;
     }
@@ -179,7 +179,7 @@ public:
         SpellInfo const* recipe = recipeId ? sSpellMgr->GetSpellInfo(recipeId) : nullptr;
         if (!item || !recipe)
         {
-            handler->SendSysMessage(TemucraftModuleText("mod-temucraft-professions", handler, 16, "Recraft needs a piece you crafted yourself, in your bags or equipped: .recraft <shift-click the item>"));
+            handler->SendSysMessage(TemucraftModuleText("mod-temucraft-professions", handler, 16, "Recraft needs a piece you crafted yourself, in your bags or equipped: .temucraft recraft <shift-click the item>"));
             return true;
         }
         SkillLineAbilityEntry const* ability = nullptr;

@@ -7,7 +7,7 @@
  * gives: profession skill, Finesse, Perception, Deftness, Multicraft, Resourcefulness. Worn equipment counts for the
  * gathering and crafting stats; the skill bonus raises the profession's skill while worn.
  *
- *   .profgear                 menu: your professions, their slots, equip from your bags, take off
+ *   .temucraft profgear                 menu: your professions, their slots, equip from your bags, take off
  *   TemucraftProfGear addon   a panel on the character window (/profgear); alt-right-click an item in your bags
  *                             to wear it. It talks to the server with hidden addon messages (prefix TPG).
  */
@@ -199,7 +199,7 @@ namespace
         return proto ? proto->Name1 : "?";
     }
 
-    // Menus (.profgear)
+    // Menus (.temucraft profgear)
     void SendMain(Player* player)
     {
         ClearGossipMenuFor(player);
@@ -384,7 +384,7 @@ public:
     {
         static ChatCommandTable commandTable =
         {
-            { "profgear", HandleProfGear, SEC_PLAYER, Console::No },
+            { "temucraft profgear", HandleProfGear, 102751, Console::No },
         };
         return commandTable;
     }

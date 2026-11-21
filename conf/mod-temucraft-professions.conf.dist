@@ -75,7 +75,7 @@ Temucraft.Crafting.Announce = 1
 #
 #    Temucraft.Knowledge.Enable
 #        Description: Knowledge points per profession: first craft of each recipe (+1), first time gathering each
-#                     kind of item (+1), each 75 skill points (below). Spent with .knowledge on three
+#                     kind of item (+1), each 75 skill points (below). Spent with .temucraft knowledge on three
 #                     specializations per profession: Finesse/Perception/Deftness for gathering, Multicraft/
 #                     Resourcefulness/Deep Focus (concentration) for crafting.
 #        Default:     1
@@ -109,7 +109,7 @@ Temucraft.Knowledge.Announce = 1
 #    Temucraft.Concentration.CostPerCraft
 #    Temucraft.Concentration.DeepFocusPercentPerRank
 #        Description: Concentration pool per crafting profession, how much it fills per hour (also offline), what a
-#                     craft spends with concentration switched on (.knowledge) - its Multicraft and Resourcefulness
+#                     craft spends with concentration switched on (.temucraft knowledge) - its Multicraft and Resourcefulness
 #                     rolls then all succeed - and what each Deep Focus rank takes off the cost and adds to the pool.
 #        Default:     1000, 20, 50, 5
 
@@ -125,7 +125,7 @@ Temucraft.Concentration.DeepFocusPercentPerRank = 5
 #    Temucraft.Quality.Enable
 #        Description: Gear you craft gets a quality rank, 1 (Rough) to 5 (Masterwork): from your skill past the
 #                     recipe's yellow rank, luck, and concentration (always 5). The item's random enchantment is
-#                     rolled as many times as its rank and the strongest kept. .recraft <item> crafts a piece you
+#                     rolled as many times as its rank and the strongest kept. .temucraft recraft <item> crafts a piece you
 #                     made again with your current skill; you keep the better result.
 #        Default:     1
 
@@ -147,7 +147,7 @@ Temucraft.Quality.Announce = 1
 #    Temucraft.ProfGear.Enable
 #        Description: A tool and two accessory slots per profession, kept by the server apart from bags and gear.
 #                     Worn equipment (mod_temucraft_profgear_item) adds profession skill and the gathering and
-#                     crafting stats. .profgear (menu) or the TemucraftProfGear addon (client/AddOns).
+#                     crafting stats. .temucraft profgear (menu) or the TemucraftProfGear addon (client/AddOns).
 #        Default:     1
 
 Temucraft.ProfGear.Enable = 1
@@ -174,7 +174,7 @@ Temucraft.ProfGear.Enable = 1
 #        Default:     2.0
 #
 #    Temucraft.ProfessionPerks.RepairAll
-#        Description: Blacksmiths can mend all their gear for free with .repairall.
+#        Description: Blacksmiths can mend all their gear for free with .temucraft repairall.
 #        Default:     1
 #
 #    Temucraft.ProfessionPerks.RepairAll.MinSkill

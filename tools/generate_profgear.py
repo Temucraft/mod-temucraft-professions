@@ -47,7 +47,7 @@ for skill, prof, gathering, tool, acc in P:
             else:
                 st = (0, 0, 0, stat_pct, stat_pct)
                 desc = f"Profession equipment ({prof}): +{bonus} skill, Multicraft +{st[3]}%, Resourcefulness +{st[4]}%."
-            desc += " Wear it with .profgear or the profession panel."
+            desc += " Wear it with .temucraft profgear or the profession panel."
             gear.append(f"({entry}, {skill}, {kind}, {bonus}, {st[0]}, {st[1]}, {st[2]}, {st[3]}, {st[4]}, {q(name)})")
             price = {1: 2500, 300: 50000, 375: 250000}[rskill] * (2 if kind == 0 else 1)
             items.append(f"({entry}, 15, 0, -1, {q(name)}, {disp}, {quality}, 1, {price}, {price // 4}, 0, {ilvl}, {skill}, {rskill}, 1, 1, 1, {q(desc)}, 1, 0)")

@@ -9,7 +9,7 @@
 //
 // - Alchemy, Mixology: an alchemist's elixirs and flasks are stronger and last twice as long, all of them (not only
 //   the Northrend recipes the alchemist knows) and from skill 1.
-// - Blacksmithing, Repair All: .repairall mends all your gear for free; the wait shrinks as the skill climbs.
+// - Blacksmithing, Repair All: .temucraft repairall mends all your gear for free; the wait shrinks as the skill climbs.
 // - Mining, Toughness: +1% maximum health per 75 skill.
 // - Skinning, Beasts of the Wild: +1% damage done to beasts per 75 skill.
 // - Tailoring, Cloth Scavenging: when cloth drops from a creature, a 25% chance for one more piece.
@@ -274,7 +274,7 @@ public:
     {
         static ChatCommandTable table =
         {
-            { "repairall", HandleRepairAll, SEC_PLAYER, Console::No },
+            { "temucraft repairall", HandleRepairAll, 102752, Console::No },
         };
         return table;
     }

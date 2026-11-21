@@ -5,7 +5,7 @@
  *   - the first time you craft each recipe (+1),
  *   - the first time you gather each kind of item with a gathering skill (+1),
  *   - each 75 skill points (+3, also counted for skill you already have).
- * Spent with .knowledge (a menu) on three specializations per profession, up to Temucraft.Knowledge.Ranks ranks:
+ * Spent with .temucraft knowledge (a menu) on three specializations per profession, up to Temucraft.Knowledge.Ranks ranks:
  *   gathering: Fine Touch (Finesse), Keen Eye (Perception), Swift Hands (Deftness)
  *   crafting:  Mass Production (Multicraft), Thrift (Resourcefulness), Deep Focus (cheaper concentration, bigger pool)
  * Taking the points back is free (Temucraft.Knowledge.ResetCost copper).
@@ -141,7 +141,7 @@ namespace
         CharacterDatabase.Execute("REPLACE INTO `mod_temucraft_knowledge` (`guid`, `skill`, `earned`) VALUES ({}, {}, {})", guid, skill, k.earned[skill]);
         if (kcfg.announce)
             if (ProfessionInfo const* p = Profession(skill))
-                ChatHandler(player->GetSession()).PSendSysMessage(TemucraftModuleText("mod-temucraft-professions", player->GetSession(), 4, "|cff66ccff[Knowledge]|r +{} {} knowledge: {}. (.knowledge)"), points, p->name, why);
+                ChatHandler(player->GetSession()).PSendSysMessage(TemucraftModuleText("mod-temucraft-professions", player->GetSession(), 4, "|cff66ccff[Knowledge]|r +{} {} knowledge: {}. (.temucraft knowledge)"), points, p->name, why);
     }
 
     void CheckMilestones(Player* player, uint32 skill, uint32 value)
@@ -381,7 +381,7 @@ public:
     {
         static ChatCommandTable commandTable =
         {
-            { "knowledge", HandleKnowledge, SEC_PLAYER, Console::No },
+            { "temucraft knowledge", HandleKnowledge, 102750, Console::No },
         };
         return commandTable;
     }
