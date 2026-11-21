@@ -152,6 +152,29 @@ Temucraft.Quality.Announce = 1
 
 Temucraft.ProfGear.Enable = 1
 
+#
+#    Temucraft.ReagentBag.Enable
+#        Description: The reagent bag: an extra bag for trade goods and reagents, kept by the server and shown in the
+#                     profession equipment window (TemucraftProfGear addon) or .temucraft profgear -> Reagent bag.
+#        Default:     1
+
+Temucraft.ReagentBag.Enable = 1
+
+#
+#    Temucraft.ReagentBag.Slots
+#        Description: How many stacks it holds.
+#        Default:     28
+
+Temucraft.ReagentBag.Slots = 28
+
+#
+#    Temucraft.ReagentBag.AutoDeposit
+#        Description: "Send reagents here" for characters who never changed it: reagents they loot or craft go
+#                     straight into the reagent bag.
+#        Default:     1
+
+Temucraft.ReagentBag.AutoDeposit = 1
+
 ########################################
 # mod-temucraft-profession-perks
 ########################################

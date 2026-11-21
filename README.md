@@ -116,3 +116,18 @@ Player-facing texts are in `module_string` (module `mod-temucraft-profession-per
 `module_string_locale`.
 
 Part of the Temucraft modules for AzerothCore 3.3.5a.
+
+## Reagent bag
+
+An extra bag for trade goods and reagents, kept by the server (the 3.3.5 client can't show a sixth bag slot). It sits
+on the right of the profession equipment window (TemucraftProfGear addon, `/profgear` or the Professions button on
+the character window) as a bag grid.
+
+- **Send reagents here** (per character, on by default): reagents you loot or craft go straight into it.
+- Click a stack to take it out, shift-click to take all of that item. Ctrl-right-click a reagent in your bags to put
+  it in; **Deposit reagents** moves every reagent from your bags.
+- The trade skill window gets a **Reagent bag** button: it takes what the selected recipe needs (times the number in
+  the box) out into your bags, then Create works as usual.
+- Without the addon: `.temucraft profgear` -> Reagent bag.
+- Holds `Temucraft.ReagentBag.Slots` stacks (28) of stackable trade goods, reagents and misc reagents (not limited or
+  timed items). Tables `mod_temucraft_reagent_bag` and `mod_temucraft_reagent_bag_settings` (characters).

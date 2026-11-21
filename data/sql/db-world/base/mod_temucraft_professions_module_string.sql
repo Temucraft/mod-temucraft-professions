@@ -19,4 +19,15 @@ INSERT INTO `module_string` (`module`, `id`, `string`) VALUES
 ('mod-temucraft-professions', 16, 'Recraft needs a piece you crafted yourself, in your bags or equipped: .temucraft recraft <shift-click the item>'),
 ('mod-temucraft-professions', 17, 'You need to know the recipe to recraft it.'),
 ('mod-temucraft-professions', 18, 'Recrafting needs {} {}.'),
-('mod-temucraft-professions', 19, '|cff66ccff[Quality]|r {} recrafted: quality {} (was {}).');
+('mod-temucraft-professions', 19, '|cff66ccff[Quality]|r {} recrafted: quality {} (was {}).'),
+('mod-temucraft-professions', 40, 'Send reagents here: on ({}/{} slots used)'),
+('mod-temucraft-professions', 41, 'Send reagents here: off ({}/{} slots used)'),
+('mod-temucraft-professions', 42, 'Deposit every reagent from my bags'),
+('mod-temucraft-professions', 43, 'Next page'),
+('mod-temucraft-professions', 44, 'Take {} x{} (of {})'),
+('mod-temucraft-professions', 45, 'First page'),
+('mod-temucraft-professions', 46, 'Your bags are full.'),
+('mod-temucraft-professions', 47, 'That isn''t a reagent.'),
+('mod-temucraft-professions', 48, 'Your reagent bag is full.'),
+('mod-temucraft-professions', 49, 'Nothing for this recipe in your reagent bag.'),
+('mod-temucraft-professions', 50, 'Reagent bag');

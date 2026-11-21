@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Title: Temucraft Profession Equipment
-## Notes: A tool and two accessories per profession, kept by the server. /profgear
+## Notes: A tool and two accessories per profession, and a reagent bag, kept by the server. /profgear
 ## Author: Temucraft
-## Version: 1.0
+## Version: 1.1
 TemucraftProfGear.lua

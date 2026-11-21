@@ -4,6 +4,7 @@ void AddTemucraftCraftingScripts();
 void AddTemucraftKnowledgeScripts();
 void AddTemucraftQualityScripts();
 void AddTemucraftProfGearScripts();
+void AddTemucraftReagentBagScripts();
 void AddTemucraftProfessionPerksScripts();
 
 void Addmod_temucraft_professionsScripts()
@@ -13,5 +14,6 @@ void Addmod_temucraft_professionsScripts()
     AddTemucraftKnowledgeScripts();
     AddTemucraftQualityScripts();
     AddTemucraftProfGearScripts();
+    AddTemucraftReagentBagScripts();
     AddTemucraftProfessionPerksScripts();
 }

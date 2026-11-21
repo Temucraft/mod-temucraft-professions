@@ -3,6 +3,11 @@
     the server. Open with /profgear or the button on the character window.
       - alt-right-click profession equipment in your bags to wear it
       - right-click a slot to take it off; hover for the tooltip
+    Reagent bag (right side): an extra bag for trade goods and reagents, kept by the server.
+      - "Send reagents here": what you loot or craft goes straight in
+      - click a stack to take it out, shift-click to take all of that item; ctrl-right-click a reagent in your bags
+        to put it in; "Deposit reagents" moves every reagent from your bags
+      - the trade skill window gets a "Reagent bag" button: takes what the recipe needs (times the number in the box)
     Everything is checked by the server; this panel only shows it (addon messages, prefix TPG).
 --]]
 
@@ -134,9 +139,151 @@ local function Refresh()
     if #professions == 0 then empty:Show() else empty:Hide() end
 end
 
+-- ---------------------------------------------------------------- reagent bag
+local COLS, BTN = 7, 37
+local reagent = { auto = true, slots = 28, used = 0, items = {}, incoming = nil }
+
+local rb = CreateFrame("Frame", "TemucraftReagentBagFrame", frame)
+rb:SetWidth(COLS * (BTN + 3) + 30)
+rb:SetHeight(frame:GetHeight())
+rb:SetPoint("TOPLEFT", frame, "TOPRIGHT", -6, 0)
+rb:SetBackdrop(frame:GetBackdrop())
+rb:EnableMouse(true)
+local rbTitle = rb:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+rbTitle:SetPoint("TOP", 0, -18)
+rbTitle:SetText("Reagent Bag")
+local rbUsed = rb:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+rbUsed:SetPoint("TOP", 0, -38)
+local rbAuto = CreateFrame("CheckButton", "TemucraftReagentBagAuto", rb, "UICheckButtonTemplate")
+rbAuto:SetWidth(24)
+rbAuto:SetHeight(24)
+rbAuto:SetPoint("BOTTOMLEFT", 16, 40)
+_G[rbAuto:GetName() .. "Text"]:SetText("Send reagents here")
+rbAuto:SetScript("OnClick", function(self) Send("RT " .. (self:GetChecked() and 1 or 0)) end)
+local rbDeposit = CreateFrame("Button", nil, rb, "UIPanelButtonTemplate")
+rbDeposit:SetWidth(130)
+rbDeposit:SetHeight(22)
+rbDeposit:SetPoint("BOTTOM", 0, 16)
+rbDeposit:SetText("Deposit reagents")
+rbDeposit:SetScript("OnClick", function() Send("RA") end)
+
+local cells = {}
+local function Cell(i)
+    if cells[i] then return cells[i] end
+    local b = CreateFrame("Button", nil, rb)
+    b:SetWidth(BTN)
+    b:SetHeight(BTN)
+    local col, row = (i - 1) % COLS, math.floor((i - 1) / COLS)
+    b:SetPoint("TOPLEFT", 16 + col * (BTN + 3), -54 - row * (BTN + 3))
+    b.icon = b:CreateTexture(nil, "ARTWORK")
+    b.icon:SetAllPoints()
+    b.bg = b:CreateTexture(nil, "BACKGROUND")
+    b.bg:SetTexture("Interface\\Buttons\\UI-EmptySlot-Disabled")
+    b.bg:SetWidth(BTN * 1.65)
+    b.bg:SetHeight(BTN * 1.65)
+    b.bg:SetPoint("CENTER")
+    b.count = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+    b.count:SetPoint("BOTTOMRIGHT", -2, 2)
+    b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    b:SetScript("OnEnter", function(self)
+        if not self.entry then return end
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetHyperlink("item:" .. self.entry)
+        GameTooltip:AddLine(self.total .. " in the reagent bag", 1, 1, 1)
+        GameTooltip:AddLine("Click: take this stack. Shift-click: take all.", 0.6, 0.6, 0.6)
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    b:SetScript("OnClick", function(self)
+        if not self.entry then return end
+        if IsModifiedClick("CHATLINK") then
+            local _, link = GetItemInfo(self.entry)
+            if link then ChatEdit_InsertLink(link) end
+        elseif IsShiftKeyDown() then
+            Send("RW " .. self.entry .. " " .. self.total)
+        else
+            Send("RW " .. self.entry .. " " .. self.stack)
+        end
+    end)
+    cells[i] = b
+    return b
+end
+
+local function RefreshBag()
+    local rows = math.ceil(reagent.slots / COLS)
+    rb:SetHeight(math.max(frame:GetHeight(), 120 + rows * (BTN + 3)))
+    rbUsed:SetText(reagent.used .. " / " .. reagent.slots .. " slots")
+    rbAuto:SetChecked(reagent.auto)
+    -- one cell per stack, like a real bag
+    local list = {}
+    for _, it in ipairs(reagent.items) do
+        local stackSize = select(8, GetItemInfo(it.entry)) or 20
+        if stackSize < 1 then stackSize = 1 end
+        local left = it.count
+        while left > 0 do
+            local n = math.min(left, stackSize)
+            tinsert(list, { entry = it.entry, n = n, total = it.count })
+            left = left - n
+        end
+    end
+    local shown = math.max(reagent.slots, #list)
+    for i = 1, shown do
+        local b, it = Cell(i), list[i]
+        if it then
+            b.entry, b.stack, b.total = it.entry, it.n, it.total
+            b.icon:SetTexture(GetItemIcon(it.entry) or "Interface\\Icons\\INV_Misc_QuestionMark")
+            b.count:SetText(it.n > 1 and it.n or "")
+        else
+            b.entry = nil
+            b.icon:SetTexture(nil)
+            b.count:SetText("")
+        end
+        b:Show()
+    end
+    for i = shown + 1, #cells do cells[i]:Hide() end
+end
+
+-- ctrl-right-click a reagent in your bags: into the reagent bag
+hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", function(self, button)
+    if button ~= "RightButton" or not IsControlKeyDown() then return end
+    local bag, slot = self:GetParent():GetID(), self:GetID()
+    if not GetContainerItemID(bag, slot) then return end
+    local sbag, sslot
+    if bag == 0 then sbag, sslot = 255, 22 + slot else sbag, sslot = 18 + bag, slot - 1 end
+    Send("RD " .. sbag .. " " .. sslot)
+end)
+
+-- the trade skill window: take what the selected recipe needs out of the reagent bag
+local function AddTradeSkillButton()
+    if TemucraftReagentBagTradeButton or not TradeSkillCreateButton then return end
+    local b = CreateFrame("Button", "TemucraftReagentBagTradeButton", TradeSkillFrame, "UIPanelButtonTemplate")
+    b:SetWidth(90)
+    b:SetHeight(22)
+    b:SetPoint("RIGHT", TradeSkillCreateAllButton, "LEFT", -4, 0)
+    b:SetText("Reagent bag")
+    b:SetScript("OnClick", function()
+        local index = GetTradeSkillSelectionIndex()
+        local link = index and GetTradeSkillRecipeLink(index)
+        local spell = link and link:match("enchant:(%d+)")
+        if spell then Send("RP " .. spell .. " " .. math.max(1, TradeSkillInputBox:GetNumber() or 1)) end
+    end)
+    b:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Take what this recipe needs (times the number in the box) out of your reagent bag.", 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+end
+
 local events = CreateFrame("Frame")
+events:RegisterEvent("ADDON_LOADED")
 events:RegisterEvent("CHAT_MSG_ADDON")
-events:SetScript("OnEvent", function(_, _, prefix, message, channel, sender)
+events:SetScript("OnEvent", function(_, event, prefix, message, channel, sender)
+    if event == "ADDON_LOADED" then
+        if prefix == "Blizzard_TradeSkillUI" then AddTradeSkillButton() end
+        return
+    end
     if prefix ~= PREFIX or sender ~= UnitName("player") then return end
     local kind, data = message:match("^(%u%u) ?(.*)$")
     if kind == "PR" then
@@ -152,6 +299,17 @@ events:SetScript("OnEvent", function(_, _, prefix, message, channel, sender)
             gear[skill][tonumber(slot)] = { entry = tonumber(entry), prop = tonumber(prop) }
         end
         Refresh()
+    elseif kind == "RS" then
+        local auto, slots, used = data:match("(%d+) (%d+) (%d+)")
+        reagent.auto, reagent.slots, reagent.used = auto == "1", tonumber(slots) or 28, tonumber(used) or 0
+        reagent.incoming = {}
+    elseif kind == "RI" and reagent.incoming then
+        for entry, count in data:gmatch("(%d+):(%d+);") do
+            tinsert(reagent.incoming, { entry = tonumber(entry), count = tonumber(count) })
+        end
+    elseif kind == "RE" and reagent.incoming then
+        reagent.items, reagent.incoming = reagent.incoming, nil
+        RefreshBag()
     elseif kind == "ER" then
         UIErrorsFrame:AddMessage(data, 1, 0.2, 0.2)
     end
@@ -181,3 +339,4 @@ open:SetHeight(20)
 open:SetPoint("TOPRIGHT", PaperDollFrame, "TOPRIGHT", -44, -40)
 open:SetText("Professions")
 open:SetScript("OnClick", Toggle)
+if IsAddOnLoaded and IsAddOnLoaded("Blizzard_TradeSkillUI") then AddTradeSkillButton() end

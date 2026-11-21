@@ -13,6 +13,7 @@
  */
 
 #include "TemucraftProfGear.h"
+#include "TemucraftReagentBag.h"
 
 #include "TemucraftModuleText.h"
 #include "Bag.h"
@@ -40,7 +41,7 @@ namespace
     constexpr uint32 PROFGEAR_MENU = 608600;
     constexpr uint8 SLOT_COUNT = 3;                 // 0 tool, 1-2 accessories
     constexpr char const* PREFIX = "TPG";
-    enum Sender : uint32 { SENDER_MAIN = 1, SENDER_SKILL, SENDER_SLOT, SENDER_EQUIP, SENDER_UNEQUIP };
+    enum Sender : uint32 { SENDER_MAIN = 1, SENDER_SKILL, SENDER_SLOT, SENDER_EQUIP, SENDER_UNEQUIP, SENDER_REAGENTS };
 
     struct GearDef { uint32 item; uint32 skill; uint8 kind; int32 skillBonus; std::array<int32, GEAR_STAT_COUNT> stats; };
     struct Worn { uint32 entry = 0; int32 randomProp = 0; uint32 suffix = 0; uint32 creator = 0; uint32 enchant = 0; uint32 durability = 0; uint32 oldGuid = 0; };
@@ -206,6 +207,7 @@ namespace
         for (auto const& p : PROFESSIONS)
             if (player->HasSkill(p.skill))
                 AddGossipItemFor(player, GOSSIP_ICON_TRAINER, Acore::StringFormat("{} ({})", p.name, player->GetSkillValue(p.skill)), SENDER_SKILL, p.skill);
+        AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, TemucraftModuleText("mod-temucraft-professions", player, 50, "Reagent bag"), SENDER_REAGENTS, 0);
         player->PlayerTalkClass->GetGossipMenu().SetMenuId(PROFGEAR_MENU);
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, player->GetGUID());
     }
@@ -311,6 +313,13 @@ public:
         if (!enabled || type != CHAT_MSG_WHISPER || lang != LANG_ADDON || receiver != player || msg.rfind("TPG\t", 0) != 0)
             return true;
         std::vector<std::string_view> args = Acore::Tokenize(std::string_view(msg).substr(4), ' ', false);
+        if (TemucraftReagentBagMessage(player, args))
+            return false;
+        if (!args.empty() && args[0] == "GET")
+        {
+            std::vector<std::string_view> get = { "RG" };
+            TemucraftReagentBagMessage(player, get);
+        }
         std::string error;
         try
         {
@@ -334,6 +343,7 @@ public:
         switch (sender)
         {
             case SENDER_MAIN: return SendMain(player);
+            case SENDER_REAGENTS: return TemucraftReagentBagMenu(player);
             case SENDER_SKILL: return SendSkill(player, action);
             case SENDER_SLOT: return SendSlot(player, action / 10, uint8(action % 10));
             case SENDER_EQUIP:
