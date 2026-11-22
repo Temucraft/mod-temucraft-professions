@@ -44,8 +44,8 @@ Each profession has three slots kept by the server, apart from bags and gear: a 
 Wearing an item takes it out of your bags (its enchantments, creator, durability and crafted quality are kept);
 taking it off gives the same item back. Worn equipment adds profession **skill** and the gathering or crafting stats.
 
-- `.temucraft profgear` opens a menu; the **TemucraftProfGear** addon (`client/AddOns`) adds a panel to the character window
-  (`/profgear`): alt-right-click equipment in your bags to wear it, right-click a slot to take it off.
+- `.temucraft profgear` opens a menu; the **TemucraftProfGear** addon (`client/AddOns`) adds a **Professions** tab to the
+  character window (`/profgear`): alt-right-click equipment in your bags to wear it, right-click a slot to take it off.
 - Equipment: `mod_temucraft_profgear_item`. The existing tools count as tools, plus a tool and an accessory per
   profession in three tiers: Proficient (skill 1), Expert (300) and Master (375), sold by the vendors who sell each
   profession's supplies (`tools/generate_profgear.py`, items 608700-608783).
@@ -120,10 +120,11 @@ Part of the Temucraft modules for AzerothCore 3.3.5a.
 ## Reagent bag
 
 An extra bag for trade goods and reagents, kept by the server (the 3.3.5 client can't show a sixth bag slot). It sits
-on the right of the profession equipment window (TemucraftProfGear addon, `/profgear` or the Professions button on
+on the right of the profession equipment window (TemucraftProfGear addon, `/profgear` or the Professions tab on
 the character window) as a bag grid.
 
-- **Send reagents here** (per character, on by default): reagents you loot or craft go straight into it.
+- **Send reagents here** (per character, on by default): reagents you loot or craft go straight into it, with a chat
+  line saying so (module_string 51).
 - Click a stack to take it out, shift-click to take all of that item. Ctrl-right-click a reagent in your bags to put
   it in; **Deposit reagents** moves every reagent from your bags.
 - The trade skill window gets a **Reagent bag** button: it takes what the selected recipe needs (times the number in

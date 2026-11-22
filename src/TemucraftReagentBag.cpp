@@ -352,6 +352,15 @@ public:
             uint32 moved = Deposit(player, m.entry, m.count);
             any |= moved > 0;
             full |= moved < m.count;
+            // say where it went: otherwise the item just seems to vanish from the bags
+            if (moved > 0)
+                if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(m.entry))
+                {
+                    std::string link = Acore::StringFormat("|c{:08x}|Hitem:{}:0:0:0:0:0:0:0:0|h[{}]|h|r",
+                        ItemQualityColors[std::min<uint32>(proto->Quality, MAX_ITEM_QUALITY - 1)], m.entry, proto->Name1);
+                    ChatHandler(player->GetSession()).PSendSysMessage(T(player, 51,
+                        "|cff66ccff[Reagent bag]|r {} x{} went to your reagent bag (Professions tab on the character window)."), link, moved);
+                }
         }
         if (any)
             SendBag(player);

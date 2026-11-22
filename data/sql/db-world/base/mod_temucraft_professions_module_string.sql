@@ -30,4 +30,5 @@ INSERT INTO `module_string` (`module`, `id`, `string`) VALUES
 ('mod-temucraft-professions', 47, 'That isn''t a reagent.'),
 ('mod-temucraft-professions', 48, 'Your reagent bag is full.'),
 ('mod-temucraft-professions', 49, 'Nothing for this recipe in your reagent bag.'),
-('mod-temucraft-professions', 50, 'Reagent bag');
+('mod-temucraft-professions', 50, 'Reagent bag'),
+('mod-temucraft-professions', 51, '|cff66ccff[Reagent bag]|r {} x{} went to your reagent bag (Professions tab on the character window).');
