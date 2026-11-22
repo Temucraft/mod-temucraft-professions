@@ -9,7 +9,9 @@
 // - Chests and other "Opening" objects open at once (the generic Opening spells are instant; the client's
 //   Spell.dbc in patch-T has the same change, so the cast bar matches). Battleground captures (8 s) are untouched.
 // - Herbs, ore veins and treasure chests always show on the minimap, for everyone, whatever tracking is chosen.
-// - They sparkle in the world (the sparkle quest objects have), for every player near them.
+// - They sparkle in the world (the sparkle quest objects have), for every player near them. Objects that are only
+//   there for a quest (quest loot, like Cactus Apple Surprise's apples) are left alone: the core sparkles those for
+//   players on the quest.
 // - Dwarves' Treasure Finding is no longer a tracking spell everyone now has for free: dwarves find more gold
 //   (Temucraft.Treasures.Dwarf.GoldPercent on any loot, .ChestGoldPercent from treasure chests).
 
@@ -21,6 +23,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "LootMgr.h"
+#include "ObjectMgr.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "SpellInfo.h"
@@ -71,6 +74,9 @@ namespace
     {
         GameObjectTemplate const* info = go->GetGOInfo();
         if (!info || info->type != GAMEOBJECT_TYPE_CHEST || !info->chest.lockId)
+            return false;
+        // quest objects: their own sparkle, only for players on the quest
+        if (info->chest.questId || sObjectMgr->IsGameObjectForQuests(info->entry))
             return false;
         LockEntry const* lock = sLockStore.LookupEntry(info->chest.lockId);
         if (!lock)
