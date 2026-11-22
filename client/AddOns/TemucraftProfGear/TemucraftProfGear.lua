@@ -328,15 +328,72 @@ hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", function(self, button
     if not frame:IsShown() then frame:Show() end
 end)
 
-local function Toggle() if frame:IsShown() then frame:Hide() else frame:Show() end end
+-- A "Professions" tab on the character window, after Character / Pets / Reputation / Skills / Currency. The panel
+-- shows inside the character window there; alt-right-click in the bags still opens it on its own.
+local tab = CreateFrame("Button", "TemucraftProfGearTab", CharacterFrame, "CharacterFrameTabButtonTemplate")
+tab:SetText("Professions")
+PanelTemplates_TabResize(tab, 0)
+local embedded = false
+
+local function PlaceTab()
+    local last
+    for i = 1, 10 do
+        local t = _G["CharacterFrameTab" .. i]
+        if t and t:IsShown() then last = t end
+    end
+    tab:ClearAllPoints()
+    if last then tab:SetPoint("LEFT", last, "RIGHT", -16, 0) end
+end
+
+local function Embed(on)
+    embedded = on
+    frame:ClearAllPoints()
+    if on then
+        frame:SetParent(CharacterFrame)
+        frame:SetPoint("TOPLEFT", CharacterFrame, "TOPLEFT", 14, -40)
+    else
+        frame:SetParent(UIParent)
+        frame:SetPoint("CENTER", 200, 0)
+    end
+    frame:SetMovable(not on)
+    if on then close:Hide() else close:Show() end
+end
+
+local function ShowTab()
+    for _, name in ipairs(CHARACTERFRAME_SUBFRAMES or {}) do
+        local f = _G[name]
+        if f then f:Hide() end
+    end
+    for i = 1, 10 do
+        local t = _G["CharacterFrameTab" .. i]
+        if t then PanelTemplates_DeselectTab(t) end
+    end
+    PanelTemplates_SelectTab(tab)
+    Embed(true)
+    frame:Show()
+end
+
+local function HideTab()
+    PanelTemplates_DeselectTab(tab)
+    if embedded then
+        frame:Hide()
+        Embed(false)
+    end
+end
+
+tab:SetScript("OnClick", function() PlaySound("igCharacterInfoTab"); ShowTab() end)
+CharacterFrame:HookScript("OnShow", function() PlaceTab(); HideTab() end)
+CharacterFrame:HookScript("OnHide", HideTab)
+hooksecurefunc("CharacterFrame_ShowSubFrame", HideTab)   -- one of Blizzard's tabs was picked
+PanelTemplates_DeselectTab(tab)
+PlaceTab()
+
+-- /profgear: the character window on this tab (or closes it)
+local function Toggle()
+    if CharacterFrame:IsShown() and embedded then HideUIPanel(CharacterFrame) return end
+    if not CharacterFrame:IsShown() then ShowUIPanel(CharacterFrame) end
+    ShowTab()
+end
 SLASH_TEMUCRAFTPROFGEAR1 = "/profgear"
 SlashCmdList["TEMUCRAFTPROFGEAR"] = Toggle
-
--- A button on the character window
-local open = CreateFrame("Button", "TemucraftProfGearCharacterButton", PaperDollFrame, "UIPanelButtonTemplate")
-open:SetWidth(90)
-open:SetHeight(20)
-open:SetPoint("TOPRIGHT", PaperDollFrame, "TOPRIGHT", -44, -40)
-open:SetText("Professions")
-open:SetScript("OnClick", Toggle)
 if IsAddOnLoaded and IsAddOnLoaded("Blizzard_TradeSkillUI") then AddTradeSkillButton() end
