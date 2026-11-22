@@ -15,7 +15,10 @@ local PREFIX = "TPG"
 local NAMES = { [182] = "Herbalism", [186] = "Mining", [393] = "Skinning", [356] = "Fishing", [164] = "Blacksmithing",
     [165] = "Leatherworking", [171] = "Alchemy", [197] = "Tailoring", [202] = "Engineering", [333] = "Enchanting",
     [755] = "Jewelcrafting", [773] = "Inscription", [185] = "Cooking", [129] = "First Aid" }
-local ROWS, SLOTS = 6, 3
+local ROWS, SLOTS = 14, 3
+-- the 11 main professions: always listed, greyed out until learned (Cooking, First Aid and Fishing show once learned)
+local PRIMARY = { 171, 164, 333, 202, 182, 773, 755, 165, 186, 393, 197 }
+local ROW_FULL, ROW_LOCKED = 54, 20
 local SLOT_LABEL = { "Tool", "Accessory", "Accessory" }
 
 local professions = {}   -- { skill, value, max }
@@ -29,7 +32,7 @@ end
 
 local frame = CreateFrame("Frame", "TemucraftProfGearFrame", UIParent)
 frame:SetWidth(330)
-frame:SetHeight(70 + ROWS * 58)
+frame:SetHeight(520)
 frame:SetPoint("CENTER", 200, 0)
 frame:SetFrameStrata("HIGH")
 frame:SetToplevel(true)
@@ -85,6 +88,11 @@ for r = 1, ROWS do
         local st = stats[self.skillId] or {}
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         GameTooltip:SetText(NAMES[self.skillId] or "Profession")
+        if self.locked then
+            GameTooltip:AddLine("Not learned yet: a trainer of this profession teaches it.", 0.8, 0.8, 0.8, true)
+            GameTooltip:Show()
+            return
+        end
         if GATHERING[self.skillId] then
             GameTooltip:AddDoubleLine("Finesse", (st[1] or 0) .. "%", 1, 1, 1, 0.4, 0.8, 1)
             GameTooltip:AddLine("Chance for each gathered stack to come with half again as much.", 0.8, 0.8, 0.8, true)
@@ -146,44 +154,68 @@ for r = 1, ROWS do
 end
 
 local function Refresh()
+    -- learned professions first, then the main professions not learned yet (greyed out, one short line each)
+    local list, learned = {}, {}
+    for _, p in ipairs(professions) do tinsert(list, p); learned[p.skill] = true end
+    for _, skill in ipairs(PRIMARY) do
+        if not learned[skill] then tinsert(list, { skill = skill, locked = true }) end
+    end
+    local y = -44
     for r = 1, ROWS do
-        local p, row = professions[r], rows[r]
+        local p, row = list[r], rows[r]
         if p then
+            row:ClearAllPoints()
+            row:SetPoint("TOPLEFT", 18, y)
+            row.skillId, row.locked = p.skill, p.locked
             row.name:SetText(NAMES[p.skill] or ("Skill " .. p.skill))
-            row.skill:SetText(p.value .. " / " .. p.max)
-            row.skillId = p.skill
-            local st = stats[p.skill]
-            if st and GATHERING[p.skill] then
-                row.stats:SetText(format("Finesse %d%%   Perception %d%%   Deftness %d%%", st[1], st[2], st[3]))
-            elseif st then
-                row.stats:SetText(format("Multicraft %d%%   Resourcefulness %d%%", st[4], st[5]))
-            else
+            if p.locked then
+                row:SetHeight(ROW_LOCKED)
+                row.name:SetTextColor(0.45, 0.45, 0.45)
+                row.skill:SetText("")
                 row.stats:SetText("")
-            end
-            for s = 1, SLOTS do
-                local b, worn = row.slots[s], gear[p.skill] and gear[p.skill][s - 1]
-                b.skillId = p.skill
-                if worn then
-                    b.entry, b.prop = worn.entry, worn.prop
-                    b.icon:SetTexture(GetItemIcon(worn.entry) or "Interface\\Icons\\INV_Misc_QuestionMark")
-                    b.icon:SetVertexColor(1, 1, 1)
+                for s = 1, SLOTS do row.slots[s]:Hide() end
+                y = y - ROW_LOCKED - 2
+            else
+                row:SetHeight(ROW_FULL)
+                row.name:SetTextColor(1, 0.82, 0)
+                row.skill:SetText(p.value .. " / " .. p.max)
+                local st = stats[p.skill]
+                if st and GATHERING[p.skill] then
+                    row.stats:SetText(format("Finesse %d%%   Perception %d%%   Deftness %d%%", st[1], st[2], st[3]))
+                elseif st then
+                    row.stats:SetText(format("Multicraft %d%%   Resourcefulness %d%%", st[4], st[5]))
                 else
-                    b.entry, b.prop = nil, nil
-                    b.icon:SetTexture(s == 1 and "Interface\\Icons\\INV_Pick_02" or "Interface\\Icons\\INV_Misc_Gear_01")
-                    b.icon:SetVertexColor(0.25, 0.25, 0.25)
+                    row.stats:SetText("")
                 end
+                for s = 1, SLOTS do
+                    local b, worn = row.slots[s], gear[p.skill] and gear[p.skill][s - 1]
+                    b.skillId = p.skill
+                    if worn then
+                        b.entry, b.prop = worn.entry, worn.prop
+                        b.icon:SetTexture(GetItemIcon(worn.entry) or "Interface\\Icons\\INV_Misc_QuestionMark")
+                        b.icon:SetVertexColor(1, 1, 1)
+                    else
+                        b.entry, b.prop = nil, nil
+                        b.icon:SetTexture(s == 1 and "Interface\\Icons\\INV_Pick_02" or "Interface\\Icons\\INV_Misc_Gear_01")
+                        b.icon:SetVertexColor(0.25, 0.25, 0.25)
+                    end
+                    b:Show()
+                end
+                y = y - ROW_FULL - 4
             end
             row:Show()
         else
             row:Hide()
         end
     end
-    if #professions == 0 then empty:Show() else empty:Hide() end
+    empty:Hide()
+    frame:SetHeight(math.max(220, -y + 40))
 end
 
 -- ---------------------------------------------------------------- reagent bag
 local COLS, BTN = 7, 37
-local reagent = { auto = true, slots = 28, used = 0, items = {}, incoming = nil }
+local reagent = { auto = true, slots = 28, used = 0, items = {}, incoming = nil, tabs = 1, maxTabs = 1, perTab = 28, nextGold = 0, minBag = 12 }
+local currentTab = 1
 
 local rb = CreateFrame("Frame", "TemucraftReagentBagFrame", frame)
 rb:SetWidth(COLS * (BTN + 3) + 30)
@@ -195,7 +227,7 @@ local rbTitle = rb:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 rbTitle:SetPoint("TOP", 0, -18)
 rbTitle:SetText("Reagent Bag")
 local rbUsed = rb:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-rbUsed:SetPoint("TOP", 0, -38)
+rbUsed:SetPoint("TOP", 0, -36)
 local rbAuto = CreateFrame("CheckButton", "TemucraftReagentBagAuto", rb, "UICheckButtonTemplate")
 rbAuto:SetWidth(24)
 rbAuto:SetHeight(24)
@@ -215,6 +247,35 @@ rbDeposit:SetPoint("BOTTOM", 0, 16)
 rbDeposit:SetText("Deposit reagents")
 rbDeposit:SetScript("OnClick", function() Send("RA") end)
 
+-- tabs: tab 1 is free, the others are unlocked one at a time with gold or by giving up a bag
+local RefreshBag
+local tabButtons = {}
+for i = 1, 4 do
+    local t = CreateFrame("Button", "TemucraftReagentBagTab" .. i, rb, "UIPanelButtonTemplate")
+    t:SetWidth(62)
+    t:SetHeight(18)
+    t:SetPoint("TOPLEFT", 16 + (i - 1) * 68, -52)
+    t:SetText("Tab " .. i)
+    t:SetScript("OnClick", function() currentTab = i; RefreshBag() end)
+    tabButtons[i] = t
+end
+local lockText = rb:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+lockText:SetPoint("TOP", 0, -110)
+lockText:SetWidth(240)
+local lockGold = CreateFrame("Button", nil, rb, "UIPanelButtonTemplate")
+lockGold:SetWidth(180)
+lockGold:SetHeight(24)
+lockGold:SetPoint("TOP", lockText, "BOTTOM", 0, -14)
+lockGold:SetScript("OnClick", function() Send("RU G") end)
+local lockBag = rb:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+lockBag:SetPoint("TOP", lockGold, "BOTTOM", 0, -14)
+lockBag:SetWidth(240)
+StaticPopupDialogs["TEMUCRAFT_REAGENT_TAB_BAG"] = {
+    text = "Give up %s for a new reagent bag tab? The bag is destroyed.",
+    button1 = YES, button2 = NO, timeout = 0, whileDead = 1, hideOnEscape = 1,
+    OnAccept = function(self, data) Send("RU B " .. data.bag .. " " .. data.slot) end,
+}
+
 local cells = {}
 local function Cell(i)
     if cells[i] then return cells[i] end
@@ -222,7 +283,7 @@ local function Cell(i)
     b:SetWidth(BTN)
     b:SetHeight(BTN)
     local col, row = (i - 1) % COLS, math.floor((i - 1) / COLS)
-    b:SetPoint("TOPLEFT", 16 + col * (BTN + 3), -54 - row * (BTN + 3))
+    b:SetPoint("TOPLEFT", 16 + col * (BTN + 3), -76 - row * (BTN + 3))
     b.icon = b:CreateTexture(nil, "ARTWORK")
     b.icon:SetAllPoints()
     b.bg = b:CreateTexture(nil, "BACKGROUND")
@@ -258,13 +319,46 @@ local function Cell(i)
     return b
 end
 
-local function RefreshBag()
-    local rows = math.ceil(reagent.slots / COLS)
-    rb:SetHeight(math.max(frame:GetHeight(), 120 + rows * (BTN + 3)))
+function RefreshBag()
+    local perTab = reagent.perTab or 28
+    local rows = math.ceil(perTab / COLS)
+    rb:SetHeight(math.max(frame:GetHeight(), 140 + rows * (BTN + 3)))
     rbUsed:SetText(reagent.used .. " / " .. reagent.slots .. " slots")
     rbAuto:SetChecked(reagent.auto)
     rbNotice:SetChecked(reagent.notify ~= false)
-    -- one cell per stack, like a real bag
+    if currentTab > reagent.maxTabs then currentTab = 1 end
+    for i = 1, 4 do
+        local t = tabButtons[i]
+        if i <= reagent.maxTabs and reagent.maxTabs > 1 then
+            t:Show()
+            t:SetText(i <= reagent.tabs and ("Tab " .. i) or ("Tab " .. i .. " *"))
+            if i == currentTab then t:LockHighlight() else t:UnlockHighlight() end
+        else
+            t:Hide()
+        end
+    end
+    -- a locked tab: how to unlock it instead of the slots
+    local locked = currentTab > reagent.tabs
+    if locked then
+        for i = 1, #cells do cells[i]:Hide() end
+        if currentTab == reagent.tabs + 1 then
+            lockText:SetText(format("Tab %d is locked. It adds %d slots.", currentTab, perTab))
+            lockGold:SetText(format("Unlock for %d gold", reagent.nextGold))
+            lockGold:Show()
+            lockBag:SetText(format("Or give up an empty bag with at least %d slots: ctrl-alt-click it in your bags.", reagent.minBag))
+        else
+            lockText:SetText(format("Unlock tab %d first.", reagent.tabs + 1))
+            lockGold:Hide()
+            lockBag:SetText("")
+        end
+        lockText:Show()
+        lockBag:Show()
+        return
+    end
+    lockText:Hide()
+    lockGold:Hide()
+    lockBag:Hide()
+    -- one cell per stack, like a real bag; this tab shows its share of them
     local list = {}
     for _, it in ipairs(reagent.items) do
         local stackSize = select(8, GetItemInfo(it.entry)) or 20
@@ -276,9 +370,9 @@ local function RefreshBag()
             left = left - n
         end
     end
-    local shown = math.max(reagent.slots, #list)
-    for i = 1, shown do
-        local b, it = Cell(i), list[i]
+    local first = (currentTab - 1) * perTab
+    for i = 1, perTab do
+        local b, it = Cell(i), list[first + i]
         if it then
             b.entry, b.stack, b.total = it.entry, it.n, it.total
             b.icon:SetTexture(GetItemIcon(it.entry) or "Interface\\Icons\\INV_Misc_QuestionMark")
@@ -290,18 +384,26 @@ local function RefreshBag()
         end
         b:Show()
     end
-    for i = shown + 1, #cells do cells[i]:Hide() end
+    for i = perTab + 1, #cells do cells[i]:Hide() end
 end
 
 -- alt-click (or ctrl-right-click) a reagent in your bags: into the reagent bag
 hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", function(self, button)
-    local altLeft = button == "LeftButton" and IsAltKeyDown()
+    local altLeft = button == "LeftButton" and IsAltKeyDown() and not IsControlKeyDown()
     local ctrlRight = button == "RightButton" and IsControlKeyDown()
-    if not altLeft and not ctrlRight then return end
+    local bagForTab = button == "LeftButton" and IsAltKeyDown() and IsControlKeyDown()
+    if not altLeft and not ctrlRight and not bagForTab then return end
     local bag, slot = self:GetParent():GetID(), self:GetID()
     if not GetContainerItemID(bag, slot) then return end
     local sbag, sslot
     if bag == 0 then sbag, sslot = 255, 22 + slot else sbag, sslot = 18 + bag, slot - 1 end
+    if bagForTab then
+        -- ctrl-alt-click: give this (empty) bag up for the next reagent bag tab, after a question
+        local link = GetContainerItemLink(bag, slot)
+        local dialog = StaticPopup_Show("TEMUCRAFT_REAGENT_TAB_BAG", link or "this bag")
+        if dialog then dialog.data = { bag = sbag, slot = sslot } end
+        return
+    end
     Send("RD " .. sbag .. " " .. sslot)
 end)
 
@@ -387,9 +489,13 @@ events:SetScript("OnEvent", function(_, event, prefix, message, channel, sender)
         end
         Refresh()
     elseif kind == "RS" then
-        local auto, slots, used, notify = data:match("(%d+) (%d+) (%d+) ?(%d*)")
+        local auto, slots, used, notify, tabs, maxTabs, perTab, nextGold, minBag =
+            data:match("(%d+) (%d+) (%d+) ?(%d*) ?(%d*) ?(%d*) ?(%d*) ?(%d*) ?(%d*)")
         reagent.auto, reagent.slots, reagent.used = auto == "1", tonumber(slots) or 28, tonumber(used) or 0
         reagent.notify = notify ~= "0"
+        reagent.tabs, reagent.maxTabs = tonumber(tabs) or 1, tonumber(maxTabs) or 1
+        reagent.perTab = tonumber(perTab) or reagent.slots
+        reagent.nextGold, reagent.minBag = tonumber(nextGold) or 0, tonumber(minBag) or 12
         reagent.incoming = {}
     elseif kind == "RI" and reagent.incoming then
         for entry, count in data:gmatch("(%d+):(%d+);") do

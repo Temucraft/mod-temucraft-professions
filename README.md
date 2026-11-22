@@ -130,7 +130,10 @@ the character window) as a bag grid.
 - The trade skill window gets a **Reagent bag** button: it takes what the selected recipe needs (times the number in
   the box) out into your bags, then Create works as usual.
 - Without the addon: `.temucraft profgear` -> Reagent bag.
-- Holds `Temucraft.ReagentBag.Slots` stacks (28) of stackable trade goods, reagents and misc reagents (not limited or
+- **Tabs** (`Temucraft.ReagentBag.Tabs`, up to 4): tab 1 is free; the next tab is unlocked per character for gold
+  (`TabGold`, 10 / 50 / 250) or by giving up an empty bag of `TabBagSlots` (12) or more (ctrl-alt-click it in your bags),
+  also from `.temucraft profgear` -> Reagent bag. Character setting `reagenttabs`.
+- Each tab holds `Temucraft.ReagentBag.Slots` stacks (28) of stackable trade goods, reagents and misc reagents (not limited or
   timed items). Tables `mod_temucraft_reagent_bag` and `mod_temucraft_character_setting` (setting `reagentbag`) (characters).
 
 ## Treasures, herbs and ore

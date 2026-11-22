@@ -30,6 +30,7 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "TemucraftModuleText.h"
+#include "Tokenize.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include <map>
@@ -41,15 +42,24 @@ namespace
     char const* const MODULE = "mod-temucraft-professions";
     constexpr uint32 MENU = 608601;
     constexpr uint32 PAGE_SIZE = 18;
-    enum Action : uint32 { A_PAGE = 1, A_TOGGLE = 2, A_DEPOSIT = 3, A_TAKE = 100000 };
+    enum Action : uint32 { A_PAGE = 1, A_TOGGLE = 2, A_DEPOSIT = 3, A_UNLOCK = 4, A_TAKE = 100000 };
 
-    struct Settings { bool enable = true; uint32 slots = 28; bool autoDefault = true; } cfg;
+    struct Settings
+    {
+        bool enable = true;
+        uint32 slots = 28;                          // per tab
+        bool autoDefault = true;
+        uint32 maxTabs = 4;                         // tab 1 is free; the others are unlocked with gold or a bag
+        std::vector<uint32> tabGold = { 10, 50, 250 };   // gold for tab 2, 3, 4
+        uint32 tabBagSlots = 12;                    // a bag given up for a tab needs at least this many slots
+    } cfg;
 
     struct ReagentStore
     {
         std::map<uint32, uint32> items;   // entry -> count
         bool autoDeposit = true;
         bool notify = true;      // a chat line and yellow text when something is sent here
+        uint32 tabs = 1;         // unlocked tabs (cfg.slots each)
     };
     std::unordered_map<ObjectGuid::LowType, ReagentStore> bags;
     struct PendingMove { uint32 entry; uint32 count; };
@@ -81,6 +91,17 @@ namespace
         return used;
     }
 
+    uint32 Capacity(ReagentStore const& bag) { return cfg.slots * std::clamp<uint32>(bag.tabs, 1, cfg.maxTabs); }
+
+    // gold for the next tab (0 = none left)
+    uint32 NextTabGold(ReagentStore const& bag)
+    {
+        if (bag.tabs >= cfg.maxTabs)
+            return 0;
+        uint32 i = bag.tabs - 1;
+        return cfg.tabGold.empty() ? 0 : cfg.tabGold[std::min<size_t>(i, cfg.tabGold.size() - 1)];
+    }
+
     // how many of this item still fit
     uint32 Room(ReagentStore const& bag, uint32 entry)
     {
@@ -91,9 +112,9 @@ namespace
         auto it = bag.items.find(entry);
         uint32 have = it == bag.items.end() ? 0 : it->second;
         uint32 usedOthers = UsedSlots(bag) - StacksOf(entry, have);
-        if (usedOthers >= cfg.slots)
+        if (usedOthers >= Capacity(bag))
             return 0;
-        return (cfg.slots - usedOthers) * stack - have;
+        return (Capacity(bag) - usedOthers) * stack - have;
     }
 
     ReagentStore& BagOf(Player* player) { return bags[player->GetGUID().GetCounter()]; }
@@ -120,7 +141,9 @@ namespace
         if (!cfg.enable)
             return;
         ReagentStore& bag = BagOf(player);
-        SendAddon(player, Acore::StringFormat("RS {} {} {} {}", bag.autoDeposit ? 1 : 0, cfg.slots, UsedSlots(bag), bag.notify ? 1 : 0));
+        // RS auto capacity used notify tabs maxTabs slotsPerTab nextTabGold minBagSlots
+        SendAddon(player, Acore::StringFormat("RS {} {} {} {} {} {} {} {} {}", bag.autoDeposit ? 1 : 0, Capacity(bag), UsedSlots(bag),
+            bag.notify ? 1 : 0, bag.tabs, cfg.maxTabs, cfg.slots, NextTabGold(bag), cfg.tabBagSlots));
         std::string chunk;
         for (auto const& [entry, count] : bag.items)
         {
@@ -225,8 +248,11 @@ namespace
         ReagentStore& bag = BagOf(player);
         ClearGossipMenuFor(player);
         AddGossipItemFor(player, GOSSIP_ICON_CHAT, Acore::StringFormat(bag.autoDeposit
-            ? T(player, 40, "Send reagents here: on ({}/{} slots used)") : T(player, 41, "Send reagents here: off ({}/{} slots used)"), UsedSlots(bag), cfg.slots),
+            ? T(player, 40, "Send reagents here: on ({}/{} slots used)") : T(player, 41, "Send reagents here: off ({}/{} slots used)"), UsedSlots(bag), Capacity(bag)),
             GOSSIP_SENDER_MAIN, A_TOGGLE);
+        if (uint32 gold = NextTabGold(bag))
+            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, Acore::StringFormat(T(player, 53, "Unlock reagent bag tab {} ({} more slots) for {} gold"),
+                bag.tabs + 1, cfg.slots, gold), GOSSIP_SENDER_MAIN, A_UNLOCK);
         AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, T(player, 42, "Deposit every reagent from my bags"), GOSSIP_SENDER_MAIN, A_DEPOSIT);
         uint32 i = 0, shown = 0;
         for (auto const& [entry, count] : bag.items)
@@ -277,6 +303,45 @@ bool TemucraftReagentBagMessage(Player* player, std::vector<std::string_view> co
         bag.notify = num(1) != 0;
         CharacterDatabase.Execute("REPLACE INTO `mod_temucraft_character_setting` (`guid`, `setting`, `value`) VALUES ({}, 'reagentbagnotice', {})", player->GetGUID().GetCounter(), bag.notify ? 1 : 0);
     }
+    else if (c == 'U')                                              // RU G: next tab for gold; RU B bag slot: for that bag
+    {
+        ReagentStore& bag = BagOf(player);
+        if (bag.tabs >= cfg.maxTabs)
+            SendAddon(player, std::string("ER ") + T(player, 54, "Every reagent bag tab is unlocked."));
+        else if (args.size() >= 2 && args[1] == "G")
+        {
+            uint32 copper = NextTabGold(bag) * GOLD;
+            if (!player->HasEnoughMoney(copper))
+                SendAddon(player, std::string("ER ") + T(player, 55, "Not enough gold."));
+            else
+            {
+                player->ModifyMoney(-int32(copper));
+                ++bag.tabs;
+            }
+        }
+        else if (args.size() >= 4 && args[1] == "B")
+        {
+            uint8 b = uint8(num(2)), s = uint8(num(3));
+            Item* item = player->GetItemByPos(b, s);
+            ItemTemplate const* proto = item ? item->GetTemplate() : nullptr;
+            if (!item || !Player::IsInventoryPos(b, s) || !proto || proto->Class != ITEM_CLASS_CONTAINER || proto->SubClass != ITEM_SUBCLASS_CONTAINER)
+                SendAddon(player, std::string("ER ") + T(player, 56, "That isn't a bag."));
+            else if (proto->ContainerSlots < cfg.tabBagSlots)
+                SendAddon(player, std::string("ER ") + Acore::StringFormat(T(player, 57, "That bag is too small: it needs at least {} slots."), cfg.tabBagSlots));
+            else if (item->IsBag() && !item->ToBag()->IsEmpty())
+                SendAddon(player, std::string("ER ") + T(player, 58, "Empty the bag first."));
+            else
+            {
+                player->DestroyItem(b, s, true);
+                ++bag.tabs;
+            }
+        }
+        if (bag.tabs > 1)
+        {
+            CharacterDatabase.Execute("REPLACE INTO `mod_temucraft_character_setting` (`guid`, `setting`, `value`) VALUES ({}, 'reagenttabs', {})", player->GetGUID().GetCounter(), bag.tabs);
+            handler.PSendSysMessage(T(player, 59, "|cff66ccff[Reagent bag]|r {} tabs unlocked: {} slots."), bag.tabs, Capacity(bag));
+        }
+    }
     else if (c == 'W')                                              // RW entry count: take out
     {
         if (!Withdraw(player, num(1), num(2)))
@@ -318,6 +383,9 @@ public:
             do bag.items[(*r)[0].Get<uint32>()] = (*r)[1].Get<uint32>(); while (r->NextRow());
         if (QueryResult r = CharacterDatabase.Query("SELECT `value` FROM `mod_temucraft_character_setting` WHERE `guid` = {} AND `setting` = 'reagentbag'", guid))
             bag.autoDeposit = (*r)[0].Get<int32>() != 0;
+        bag.tabs = 1;
+        if (QueryResult r = CharacterDatabase.Query("SELECT `value` FROM `mod_temucraft_character_setting` WHERE `guid` = {} AND `setting` = 'reagenttabs'", guid))
+            bag.tabs = std::max<uint32>(1, (*r)[0].Get<uint32>());
         bag.notify = true;
         if (QueryResult r = CharacterDatabase.Query("SELECT `value` FROM `mod_temucraft_character_setting` WHERE `guid` = {} AND `setting` = 'reagentbagnotice'", guid))
             bag.notify = (*r)[0].Get<int32>() != 0;
@@ -368,12 +436,13 @@ public:
                 if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(m.entry))
                 {
                     uint32 used = UsedSlots(BagOf(player));
-                    uint32 free = cfg.slots > used ? cfg.slots - used : 0;
+                    uint32 cap = Capacity(BagOf(player));
+                    uint32 free = cap > used ? cap - used : 0;
                     std::string link = Acore::StringFormat("|c{:08x}|Hitem:{}:0:0:0:0:0:0:0:0|h[{}]|h|r",
                         ItemQualityColors[std::min<uint32>(proto->Quality, MAX_ITEM_QUALITY - 1)], m.entry, proto->Name1);
                     ChatHandler(player->GetSession()).PSendSysMessage(T(player, 51,
                         "|cff66ccff[Reagent bag]|r {} x{} was put in your reagent bag ({} of {} slots free). Open it from the Professions tab on the character window. Untick \"Send reagents here\" there to keep reagents in your bags, or \"Tell me when reagents go here\" to hide these messages."),
-                        link, moved, free, cfg.slots);
+                        link, moved, free, cap);
                     player->GetSession()->SendAreaTriggerMessage(T(player, 52, "{} x{} put in your reagent bag ({} slots free)"), proto->Name1, moved, free);
                 }
         }
@@ -400,6 +469,12 @@ public:
             TemucraftReagentBagMessage(player, args);
             return SendMenu(player, 0);
         }
+        if (action == A_UNLOCK)
+        {
+            std::vector<std::string_view> args = { "RU", "G" };
+            TemucraftReagentBagMessage(player, args);
+            return SendMenu(player, 0);
+        }
         if (action == A_DEPOSIT)
         {
             DepositAll(player);
@@ -421,6 +496,12 @@ public:
         cfg.enable = sConfigMgr->GetOption<bool>("Temucraft.ReagentBag.Enable", true);
         cfg.slots = std::max<uint32>(1, sConfigMgr->GetOption<uint32>("Temucraft.ReagentBag.Slots", 28));
         cfg.autoDefault = sConfigMgr->GetOption<bool>("Temucraft.ReagentBag.AutoDeposit", true);
+        cfg.maxTabs = std::clamp<uint32>(sConfigMgr->GetOption<uint32>("Temucraft.ReagentBag.Tabs", 4), 1, 4);
+        cfg.tabGold.clear();
+        std::string tabGold = sConfigMgr->GetOption<std::string>("Temucraft.ReagentBag.TabGold", "10 50 250");
+        for (std::string_view g : Acore::Tokenize(tabGold, ' ', false))
+            cfg.tabGold.push_back(uint32(std::strtoul(std::string(g).c_str(), nullptr, 10)));
+        cfg.tabBagSlots = sConfigMgr->GetOption<uint32>("Temucraft.ReagentBag.TabBagSlots", 12);
     }
 };
 

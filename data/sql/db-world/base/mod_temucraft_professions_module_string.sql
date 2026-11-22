@@ -32,4 +32,11 @@ INSERT INTO `module_string` (`module`, `id`, `string`) VALUES
 ('mod-temucraft-professions', 49, 'Nothing for this recipe in your reagent bag.'),
 ('mod-temucraft-professions', 50, 'Reagent bag'),
 ('mod-temucraft-professions', 51, '|cff66ccff[Reagent bag]|r {} x{} was put in your reagent bag ({} of {} slots free). Open it from the Professions tab on the character window. Untick "Send reagents here" there to keep reagents in your bags, or "Tell me when reagents go here" to hide these messages.'),
-('mod-temucraft-professions', 52, '{} x{} put in your reagent bag ({} slots free)');
+('mod-temucraft-professions', 52, '{} x{} put in your reagent bag ({} slots free)'),
+('mod-temucraft-professions', 53, 'Unlock reagent bag tab {} ({} more slots) for {} gold'),
+('mod-temucraft-professions', 54, 'Every reagent bag tab is unlocked.'),
+('mod-temucraft-professions', 55, 'Not enough gold.'),
+('mod-temucraft-professions', 56, 'That isn''t a bag.'),
+('mod-temucraft-professions', 57, 'That bag is too small: it needs at least {} slots.'),
+('mod-temucraft-professions', 58, 'Empty the bag first.'),
+('mod-temucraft-professions', 59, '|cff66ccff[Reagent bag]|r {} tabs unlocked: {} slots.');

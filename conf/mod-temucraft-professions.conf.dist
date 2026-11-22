@@ -175,6 +175,28 @@ Temucraft.ReagentBag.Slots = 28
 
 Temucraft.ReagentBag.AutoDeposit = 1
 
+#
+#    Temucraft.ReagentBag.Tabs
+#        Description: How many reagent bag tabs there are (1-4), each with Temucraft.ReagentBag.Slots slots. Tab 1 is
+#                     free; each next one is unlocked per character with gold or by giving up an empty bag.
+#        Default:     4
+
+Temucraft.ReagentBag.Tabs = 4
+
+#
+#    Temucraft.ReagentBag.TabGold
+#        Description: Gold for tab 2, 3 and 4, separated by spaces (the last number repeats if there are fewer).
+#        Default:     "10 50 250"
+
+Temucraft.ReagentBag.TabGold = "10 50 250"
+
+#
+#    Temucraft.ReagentBag.TabBagSlots
+#        Description: A bag given up for a tab needs at least this many slots (it is destroyed; it must be empty).
+#        Default:     12
+
+Temucraft.ReagentBag.TabBagSlots = 12
+
 ########################################
 # mod-temucraft-profession-perks
 ########################################
