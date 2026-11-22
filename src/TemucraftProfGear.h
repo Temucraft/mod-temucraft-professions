@@ -10,5 +10,8 @@ enum TemucraftGearStat : uint8 { GEAR_FINESSE = 0, GEAR_PERCEPTION, GEAR_DEFTNES
 
 // Percent the profession equipment a player wears for this skill adds to a stat
 int32 TemucraftProfGearStat(Player* player, uint32 skill, TemucraftGearStat stat);
+// a profession's stats right now (percent), for the panel: tools carried, equipment worn, specializations
+void TemucraftGatheringStats(Player* player, uint32 skill, int32& finesse, int32& perception, int32& deftness);
+void TemucraftCraftingStats(Player* player, uint32 skill, int32& multicraft, int32& resourcefulness);
 
 #endif

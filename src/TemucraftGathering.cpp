@@ -282,6 +282,14 @@ public:
     void OnStartup() override { LoadData(); }
 };
 
+void TemucraftGatheringStats(Player* player, uint32 skill, int32& finesse, int32& perception, int32& deftness)
+{
+    GatherStats s = StatsFor(player, skill);
+    finesse = s.finesse;
+    perception = s.perception;
+    deftness = s.deftness;
+}
+
 void AddTemucraftGatheringScripts()
 {
     new TemucraftGathering_Misc();

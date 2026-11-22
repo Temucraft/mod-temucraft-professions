@@ -195,6 +195,25 @@ public:
     }
 };
 
+// A crafting profession's stats without a recipe (Mastery depends on the recipe, so it isn't in this number)
+void TemucraftCraftingStats(Player* player, uint32 skill, int32& multicraft, int32& resourcefulness)
+{
+    multicraft = 0;
+    resourcefulness = 0;
+    for (CraftTool const& t : sCraftTools)
+        if ((t.skill == 0 || t.skill == skill) && player->HasItemCount(t.item, 1, false))
+        {
+            multicraft += t.multicraft;
+            resourcefulness += t.resourcefulness;
+        }
+    multicraft += TemucraftProfGearStat(player, skill, GEAR_MULTICRAFT);
+    resourcefulness += TemucraftProfGearStat(player, skill, GEAR_RESOURCEFULNESS);
+    multicraft += TemucraftSpecBonus(player, skill, PROF_STAT_MULTICRAFT);
+    resourcefulness += TemucraftSpecBonus(player, skill, PROF_STAT_RESOURCEFULNESS);
+    multicraft = std::clamp(multicraft, 0, sCraft.maxMulticraft);
+    resourcefulness = std::clamp(resourcefulness, 0, sCraft.maxResourcefulness);
+}
+
 void AddTemucraftCraftingScripts()
 {
     new TemucraftCrafting_Player();

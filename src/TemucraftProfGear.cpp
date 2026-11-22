@@ -110,8 +110,19 @@ namespace
                 profs += Acore::StringFormat("{}:{}:{};", p.skill, player->GetSkillValue(p.skill), player->GetMaxSkillValue(p.skill));
         for (auto const& [key, w] : worn[player->GetGUID().GetCounter()])
             gear += Acore::StringFormat("{}:{}:{}:{};", key.first, uint32(key.second), w.entry, w.randomProp);
+        // each profession's stats, so the panel can show them: skill:finesse:perception:deftness:multicraft:resourcefulness
+        std::string stats;
+        for (auto const& p : PROFESSIONS)
+            if (player->HasSkill(p.skill))
+            {
+                int32 fin = 0, per = 0, deft = 0, multi = 0, res = 0;
+                TemucraftGatheringStats(player, p.skill, fin, per, deft);
+                TemucraftCraftingStats(player, p.skill, multi, res);
+                stats += Acore::StringFormat("{}:{}:{}:{}:{}:{};", p.skill, fin, per, deft, multi, res);
+            }
         SendAddon(player, "PR " + profs);
         SendAddon(player, "ST " + gear);
+        SendAddon(player, "SS " + stats);
     }
 
     Item* ItemAt(Player* player, uint8 bag, uint8 slot) { return player->GetItemByPos(bag, slot); }

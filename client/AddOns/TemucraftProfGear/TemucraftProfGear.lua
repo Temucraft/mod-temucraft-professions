@@ -20,6 +20,8 @@ local SLOT_LABEL = { "Tool", "Accessory", "Accessory" }
 
 local professions = {}   -- { skill, value, max }
 local gear = {}          -- gear[skill][slot] = { entry, prop }
+local stats = {}         -- stats[skill] = { finesse, perception, deftness, multicraft, resourcefulness } (percent)
+local GATHERING = { [182] = true, [186] = true, [393] = true, [356] = true }
 
 local function Send(text)
     SendAddonMessage(PREFIX, text, "WHISPER", UnitName("player"))
@@ -27,7 +29,7 @@ end
 
 local frame = CreateFrame("Frame", "TemucraftProfGearFrame", UIParent)
 frame:SetWidth(330)
-frame:SetHeight(70 + ROWS * 46)
+frame:SetHeight(70 + ROWS * 58)
 frame:SetPoint("CENTER", 200, 0)
 frame:SetFrameStrata("HIGH")
 frame:SetToplevel(true)
@@ -51,7 +53,7 @@ title:SetPoint("TOP", 0, -18)
 title:SetText("Profession Equipment")
 local hint = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 hint:SetPoint("BOTTOM", 0, 16)
-hint:SetText("Alt-right-click equipment in your bags to wear it. Right-click a slot to take it off.")
+hint:SetText("Alt-right-click equipment in your bags to wear it. Right-click a slot to take it off. Alt-click a reagent to put it in the reagent bag.")
 hint:SetWidth(290)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", -6, -6)
@@ -63,14 +65,45 @@ local rows = {}
 for r = 1, ROWS do
     local row = CreateFrame("Frame", nil, frame)
     row:SetWidth(300)
-    row:SetHeight(42)
-    row:SetPoint("TOPLEFT", 18, -44 - (r - 1) * 46)
+    row:SetHeight(54)
+    row:SetPoint("TOPLEFT", 18, -44 - (r - 1) * 58)
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     row.name:SetPoint("TOPLEFT", 0, -4)
     row.name:SetWidth(150)
     row.name:SetJustifyH("LEFT")
     row.skill = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     row.skill:SetPoint("TOPLEFT", 0, -22)
+    -- the profession's stats right now; hover the row for what each one does
+    row.stats = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    row.stats:SetPoint("TOPLEFT", 0, -41)
+    row.stats:SetWidth(300)
+    row.stats:SetJustifyH("LEFT")
+    row.stats:SetTextColor(0.4, 0.8, 1)
+    row:EnableMouse(true)
+    row:SetScript("OnEnter", function(self)
+        if not self.skillId then return end
+        local st = stats[self.skillId] or {}
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(NAMES[self.skillId] or "Profession")
+        if GATHERING[self.skillId] then
+            GameTooltip:AddDoubleLine("Finesse", (st[1] or 0) .. "%", 1, 1, 1, 0.4, 0.8, 1)
+            GameTooltip:AddLine("Chance for each gathered stack to come with half again as much.", 0.8, 0.8, 0.8, true)
+            GameTooltip:AddDoubleLine("Perception", (st[2] or 0) .. "%", 1, 1, 1, 0.4, 0.8, 1)
+            GameTooltip:AddLine("Chance to also find a rare reagent: gems from ore, rare herbs, rare hides.", 0.8, 0.8, 0.8, true)
+            GameTooltip:AddDoubleLine("Deftness", (st[3] or 0) .. "%", 1, 1, 1, 0.4, 0.8, 1)
+            GameTooltip:AddLine("Faster mining, herb gathering and skinning.", 0.8, 0.8, 0.8, true)
+        else
+            GameTooltip:AddDoubleLine("Multicraft", (st[4] or 0) .. "%", 1, 1, 1, 0.4, 0.8, 1)
+            GameTooltip:AddLine("Chance for a craft of stackable goods (potions, food, bandages, gems...) to make extra.", 0.8, 0.8, 0.8, true)
+            GameTooltip:AddDoubleLine("Resourcefulness", (st[5] or 0) .. "%", 1, 1, 1, 0.4, 0.8, 1)
+            GameTooltip:AddLine("Chance, for each kind of reagent, to get 30% of it back.", 0.8, 0.8, 0.8, true)
+            GameTooltip:AddLine("Mastery adds up to 10% more of both as your skill rises past a recipe's yellow rank.", 0.6, 0.6, 0.6, true)
+        end
+        GameTooltip:AddLine(" ")
+        GameTooltip:AddLine("Stats come from tools in your bags, the equipment in these slots, and specializations.", 0.6, 0.6, 0.6, true)
+        GameTooltip:Show()
+    end)
+    row:SetScript("OnLeave", function() GameTooltip:Hide() end)
     row.slots = {}
     for s = 1, SLOTS do
         local b = CreateFrame("Button", nil, row)
@@ -118,6 +151,15 @@ local function Refresh()
         if p then
             row.name:SetText(NAMES[p.skill] or ("Skill " .. p.skill))
             row.skill:SetText(p.value .. " / " .. p.max)
+            row.skillId = p.skill
+            local st = stats[p.skill]
+            if st and GATHERING[p.skill] then
+                row.stats:SetText(format("Finesse %d%%   Perception %d%%   Deftness %d%%", st[1], st[2], st[3]))
+            elseif st then
+                row.stats:SetText(format("Multicraft %d%%   Resourcefulness %d%%", st[4], st[5]))
+            else
+                row.stats:SetText("")
+            end
             for s = 1, SLOTS do
                 local b, worn = row.slots[s], gear[p.skill] and gear[p.skill][s - 1]
                 b.skillId = p.skill
@@ -251,9 +293,11 @@ local function RefreshBag()
     for i = shown + 1, #cells do cells[i]:Hide() end
 end
 
--- ctrl-right-click a reagent in your bags: into the reagent bag
+-- alt-click (or ctrl-right-click) a reagent in your bags: into the reagent bag
 hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", function(self, button)
-    if button ~= "RightButton" or not IsControlKeyDown() then return end
+    local altLeft = button == "LeftButton" and IsAltKeyDown()
+    local ctrlRight = button == "RightButton" and IsControlKeyDown()
+    if not altLeft and not ctrlRight then return end
     local bag, slot = self:GetParent():GetID(), self:GetID()
     if not GetContainerItemID(bag, slot) then return end
     local sbag, sslot
@@ -262,22 +306,52 @@ hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", function(self, button
 end)
 
 -- the trade skill window: take what the selected recipe needs out of the reagent bag
+-- Craft from the reagent bag: the game only crafts with reagents in your bags (it checks before asking the server),
+-- so this takes what the recipe needs out of the reagent bag, then presses Create for you once they've arrived.
+local pendingCraft
+local craftWatch = CreateFrame("Frame")
+craftWatch:Hide()
+craftWatch:SetScript("OnUpdate", function(self, elapsed)
+    local p = pendingCraft
+    if not p then self:Hide() return end
+    p.wait = p.wait - elapsed
+    local _, _, available = GetTradeSkillInfo(p.index)
+    if available and available >= p.count then
+        pendingCraft = nil
+        self:Hide()
+        if GetTradeSkillSelectionIndex() == p.index then DoTradeSkill(p.index, p.count) end
+    elseif p.wait <= 0 then
+        pendingCraft = nil
+        self:Hide()
+        UIErrorsFrame:AddMessage("Not enough reagents in your bags and reagent bag.", 1, 0.1, 0.1)
+    end
+end)
+
 local function AddTradeSkillButton()
     if TemucraftReagentBagTradeButton or not TradeSkillCreateButton then return end
     local b = CreateFrame("Button", "TemucraftReagentBagTradeButton", TradeSkillFrame, "UIPanelButtonTemplate")
-    b:SetWidth(90)
+    b:SetWidth(110)
     b:SetHeight(22)
     b:SetPoint("RIGHT", TradeSkillCreateAllButton, "LEFT", -4, 0)
-    b:SetText("Reagent bag")
+    b:SetText("Craft from bag")
     b:SetScript("OnClick", function()
         local index = GetTradeSkillSelectionIndex()
         local link = index and GetTradeSkillRecipeLink(index)
         local spell = link and link:match("enchant:(%d+)")
-        if spell then Send("RP " .. spell .. " " .. math.max(1, TradeSkillInputBox:GetNumber() or 1)) end
+        if not spell then return end
+        local count = math.max(1, TradeSkillInputBox:GetNumber() or 1)
+        local _, _, available = GetTradeSkillInfo(index)
+        if available and available >= count then
+            DoTradeSkill(index, count)          -- everything is already in the bags
+            return
+        end
+        Send("RP " .. spell .. " " .. count)    -- the rest comes out of the reagent bag, then it crafts
+        pendingCraft = { index = index, count = count, wait = 3 }
+        craftWatch:Show()
     end)
     b:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText("Take what this recipe needs (times the number in the box) out of your reagent bag.", 1, 1, 1, 1, true)
+        GameTooltip:SetText("Craft this recipe (times the number in the box) using reagents from your bags and your reagent bag.", 1, 1, 1, 1, true)
         GameTooltip:Show()
     end)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -306,6 +380,12 @@ events:SetScript("OnEvent", function(_, event, prefix, message, channel, sender)
             gear[skill][tonumber(slot)] = { entry = tonumber(entry), prop = tonumber(prop) }
         end
         Refresh()
+    elseif kind == "SS" then
+        wipe(stats)
+        for skill, a, b, c, d, e in data:gmatch("(%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+);") do
+            stats[tonumber(skill)] = { tonumber(a), tonumber(b), tonumber(c), tonumber(d), tonumber(e) }
+        end
+        Refresh()
     elseif kind == "RS" then
         local auto, slots, used, notify = data:match("(%d+) (%d+) (%d+) ?(%d*)")
         reagent.auto, reagent.slots, reagent.used = auto == "1", tonumber(slots) or 28, tonumber(used) or 0
@@ -319,6 +399,7 @@ events:SetScript("OnEvent", function(_, event, prefix, message, channel, sender)
         reagent.items, reagent.incoming = reagent.incoming, nil
         RefreshBag()
     elseif kind == "ER" then
+        pendingCraft = nil
         UIErrorsFrame:AddMessage(data, 1, 0.2, 0.2)
     end
 end)
