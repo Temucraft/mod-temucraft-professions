@@ -23,7 +23,6 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "LootMgr.h"
-#include "ObjectMgr.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "SpellInfo.h"
@@ -76,7 +75,7 @@ namespace
         if (!info || info->type != GAMEOBJECT_TYPE_CHEST || !info->chest.lockId)
             return false;
         // quest objects: their own sparkle, only for players on the quest
-        if (info->chest.questId || sObjectMgr->IsGameObjectForQuests(info->entry))
+        if (info->chest.questId || info->IsGameObjectForQuests())
             return false;
         LockEntry const* lock = sLockStore.LookupEntry(info->chest.lockId);
         if (!lock)
