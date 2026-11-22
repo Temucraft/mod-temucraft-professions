@@ -160,6 +160,12 @@ rbAuto:SetHeight(24)
 rbAuto:SetPoint("BOTTOMLEFT", 16, 40)
 _G[rbAuto:GetName() .. "Text"]:SetText("Send reagents here")
 rbAuto:SetScript("OnClick", function(self) Send("RT " .. (self:GetChecked() and 1 or 0)) end)
+local rbNotice = CreateFrame("CheckButton", "TemucraftReagentBagNotice", rb, "UICheckButtonTemplate")
+rbNotice:SetWidth(24)
+rbNotice:SetHeight(24)
+rbNotice:SetPoint("BOTTOMLEFT", 16, 62)
+_G[rbNotice:GetName() .. "Text"]:SetText("Tell me when reagents go here")
+rbNotice:SetScript("OnClick", function(self) Send("RN " .. (self:GetChecked() and 1 or 0)) end)
 local rbDeposit = CreateFrame("Button", nil, rb, "UIPanelButtonTemplate")
 rbDeposit:SetWidth(130)
 rbDeposit:SetHeight(22)
@@ -215,6 +221,7 @@ local function RefreshBag()
     rb:SetHeight(math.max(frame:GetHeight(), 120 + rows * (BTN + 3)))
     rbUsed:SetText(reagent.used .. " / " .. reagent.slots .. " slots")
     rbAuto:SetChecked(reagent.auto)
+    rbNotice:SetChecked(reagent.notify ~= false)
     -- one cell per stack, like a real bag
     local list = {}
     for _, it in ipairs(reagent.items) do
@@ -300,8 +307,9 @@ events:SetScript("OnEvent", function(_, event, prefix, message, channel, sender)
         end
         Refresh()
     elseif kind == "RS" then
-        local auto, slots, used = data:match("(%d+) (%d+) (%d+)")
+        local auto, slots, used, notify = data:match("(%d+) (%d+) (%d+) ?(%d*)")
         reagent.auto, reagent.slots, reagent.used = auto == "1", tonumber(slots) or 28, tonumber(used) or 0
+        reagent.notify = notify ~= "0"
         reagent.incoming = {}
     elseif kind == "RI" and reagent.incoming then
         for entry, count in data:gmatch("(%d+):(%d+);") do

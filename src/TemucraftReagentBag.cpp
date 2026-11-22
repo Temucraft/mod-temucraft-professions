@@ -49,6 +49,7 @@ namespace
     {
         std::map<uint32, uint32> items;   // entry -> count
         bool autoDeposit = true;
+        bool notify = true;      // a chat line and yellow text when something is sent here
     };
     std::unordered_map<ObjectGuid::LowType, ReagentStore> bags;
     struct PendingMove { uint32 entry; uint32 count; };
@@ -119,7 +120,7 @@ namespace
         if (!cfg.enable)
             return;
         ReagentStore& bag = BagOf(player);
-        SendAddon(player, Acore::StringFormat("RS {} {} {}", bag.autoDeposit ? 1 : 0, cfg.slots, UsedSlots(bag)));
+        SendAddon(player, Acore::StringFormat("RS {} {} {} {}", bag.autoDeposit ? 1 : 0, cfg.slots, UsedSlots(bag), bag.notify ? 1 : 0));
         std::string chunk;
         for (auto const& [entry, count] : bag.items)
         {
@@ -270,6 +271,12 @@ bool TemucraftReagentBagMessage(Player* player, std::vector<std::string_view> co
         bag.autoDeposit = num(1) != 0;
         CharacterDatabase.Execute("REPLACE INTO `mod_temucraft_character_setting` (`guid`, `setting`, `value`) VALUES ({}, 'reagentbag', {})", player->GetGUID().GetCounter(), bag.autoDeposit ? 1 : 0);
     }
+    else if (c == 'N')                                              // RN 0|1: tell me when reagents are sent here
+    {
+        ReagentStore& bag = BagOf(player);
+        bag.notify = num(1) != 0;
+        CharacterDatabase.Execute("REPLACE INTO `mod_temucraft_character_setting` (`guid`, `setting`, `value`) VALUES ({}, 'reagentbagnotice', {})", player->GetGUID().GetCounter(), bag.notify ? 1 : 0);
+    }
     else if (c == 'W')                                              // RW entry count: take out
     {
         if (!Withdraw(player, num(1), num(2)))
@@ -311,6 +318,9 @@ public:
             do bag.items[(*r)[0].Get<uint32>()] = (*r)[1].Get<uint32>(); while (r->NextRow());
         if (QueryResult r = CharacterDatabase.Query("SELECT `value` FROM `mod_temucraft_character_setting` WHERE `guid` = {} AND `setting` = 'reagentbag'", guid))
             bag.autoDeposit = (*r)[0].Get<int32>() != 0;
+        bag.notify = true;
+        if (QueryResult r = CharacterDatabase.Query("SELECT `value` FROM `mod_temucraft_character_setting` WHERE `guid` = {} AND `setting` = 'reagentbagnotice'", guid))
+            bag.notify = (*r)[0].Get<int32>() != 0;
     }
 
     void OnPlayerLogout(Player* player) override
@@ -352,14 +362,19 @@ public:
             uint32 moved = Deposit(player, m.entry, m.count);
             any |= moved > 0;
             full |= moved < m.count;
-            // say where it went: otherwise the item just seems to vanish from the bags
-            if (moved > 0)
+            // say where it went (otherwise the item just seems to vanish from the bags), how much room is left, and how
+            // to stop it; players can turn these messages off ("Tell me when reagents go here" in the panel)
+            if (moved > 0 && BagOf(player).notify)
                 if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(m.entry))
                 {
+                    uint32 used = UsedSlots(BagOf(player));
+                    uint32 free = cfg.slots > used ? cfg.slots - used : 0;
                     std::string link = Acore::StringFormat("|c{:08x}|Hitem:{}:0:0:0:0:0:0:0:0|h[{}]|h|r",
                         ItemQualityColors[std::min<uint32>(proto->Quality, MAX_ITEM_QUALITY - 1)], m.entry, proto->Name1);
                     ChatHandler(player->GetSession()).PSendSysMessage(T(player, 51,
-                        "|cff66ccff[Reagent bag]|r {} x{} went to your reagent bag (Professions tab on the character window)."), link, moved);
+                        "|cff66ccff[Reagent bag]|r {} x{} was put in your reagent bag ({} of {} slots free). Open it from the Professions tab on the character window. Untick \"Send reagents here\" there to keep reagents in your bags, or \"Tell me when reagents go here\" to hide these messages."),
+                        link, moved, free, cfg.slots);
+                    player->GetSession()->SendAreaTriggerMessage(T(player, 52, "{} x{} put in your reagent bag ({} slots free)"), proto->Name1, moved, free);
                 }
         }
         if (any)
