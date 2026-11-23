@@ -15,6 +15,7 @@
 // - Dwarves' Treasure Finding is no longer a tracking spell everyone now has for free: dwarves find more gold
 //   (Temucraft.Treasures.Dwarf.GoldPercent on any loot, .ChestGoldPercent from treasure chests).
 
+#include "TemucraftLocked.h"
 #include "Cell.h"
 #include "CellImpl.h"
 #include "Config.h"
@@ -55,7 +56,7 @@ namespace
         uint32 timer = 0;
         std::unordered_set<ObjectGuid> sparkling;   // objects this player was told to sparkle
     };
-    std::unordered_map<ObjectGuid, Seen> players;
+    Temucraft::LockedMap<ObjectGuid, Seen> players;
 
     void LoadSettings()
     {

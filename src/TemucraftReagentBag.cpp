@@ -16,6 +16,7 @@
 // What fits: stackable trade goods (class 7), reagents (class 5) and misc reagents (15/1), not limited (max count) or
 // timed items. Addon messages use the profession equipment prefix TPG (R* commands).
 
+#include "TemucraftLocked.h"
 #include "TemucraftReagentBag.h"
 
 #include "Bag.h"
@@ -61,9 +62,9 @@ namespace
         bool notify = true;      // a chat line and yellow text when something is sent here
         uint32 tabs = 1;         // unlocked tabs (cfg.slots each)
     };
-    std::unordered_map<ObjectGuid::LowType, ReagentStore> bags;
+    Temucraft::LockedMap<ObjectGuid::LowType, ReagentStore> bags;
     struct PendingMove { uint32 entry; uint32 count; };
-    std::unordered_map<ObjectGuid::LowType, std::vector<PendingMove>> pending;   // moved on the next update (the core
+    Temucraft::LockedMap<ObjectGuid::LowType, std::vector<PendingMove>> pending;   // moved on the next update (the core
                                                                                  // still uses the new item after the hook)
 
     char const* T(Player* p, uint32 id, char const* fb) { return TemucraftModuleText(MODULE, p, id, fb); }
