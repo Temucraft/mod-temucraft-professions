@@ -32,6 +32,7 @@
 #include "SpellMgr.h"
 #include "WorldScript.h"
 #include <algorithm>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -55,7 +56,9 @@ namespace
     std::vector<Tool> sTools;
     std::vector<Rare> sRares;
     std::unordered_map<LootTemplate const*, Node> sNodes;   // gameobject loot -> gathering skill and node level
+    // Player updates run on several map threads at once, so the shared timer map needs a lock.
     std::unordered_map<ObjectGuid::LowType, uint32> sTimers;
+    std::mutex sTimersLock;
 
     void LoadConfig()
     {
@@ -265,13 +268,20 @@ public:
 
     void OnPlayerUpdate(Player* player, uint32 diff) override
     {
-        uint32& t = sTimers[player->GetGUID().GetCounter()];
-        if (t > diff) { t -= diff; return; }
-        t = 5000;
+        {
+            std::lock_guard lock(sTimersLock);
+            uint32& t = sTimers[player->GetGUID().GetCounter()];
+            if (t > diff) { t -= diff; return; }
+            t = 5000;
+        }
         UpdateDeftness(player);
     }
 
-    void OnPlayerLogout(Player* player) override { sTimers.erase(player->GetGUID().GetCounter()); }
+    void OnPlayerLogout(Player* player) override
+    {
+        std::lock_guard lock(sTimersLock);
+        sTimers.erase(player->GetGUID().GetCounter());
+    }
 };
 
 class TemucraftGathering_World : public WorldScript
