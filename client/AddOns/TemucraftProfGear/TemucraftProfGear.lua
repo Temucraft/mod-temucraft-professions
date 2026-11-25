@@ -18,7 +18,8 @@ local NAMES = { [182] = "Herbalism", [186] = "Mining", [393] = "Skinning", [356]
 local ROWS, SLOTS = 14, 3
 -- the 11 main professions: always listed, greyed out until learned (Cooking, First Aid and Fishing show once learned)
 local PRIMARY = { 171, 164, 333, 202, 182, 773, 755, 165, 186, 393, 197 }
-local ROW_FULL, ROW_LOCKED = 54, 20
+local ROW_FULL, ROW_LOCKED = 54, 16
+local TOP = -84   -- the rows start under the title and the help text
 local SLOT_LABEL = { "Tool", "Accessory", "Accessory" }
 
 local professions = {}   -- { skill, value, max }
@@ -55,9 +56,11 @@ local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 title:SetPoint("TOP", 0, -18)
 title:SetText("Profession Equipment")
 local hint = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-hint:SetPoint("BOTTOM", 0, 16)
+-- under the title, in its own space (at the bottom it ran into the last row and the character window's tabs)
+hint:SetPoint("TOP", title, "BOTTOM", 0, -6)
 hint:SetText("Alt-right-click equipment in your bags to wear it. Right-click a slot to take it off. Alt-click a reagent to put it in the reagent bag.")
 hint:SetWidth(290)
+hint:SetJustifyH("CENTER")
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", -6, -6)
 local empty = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -69,7 +72,7 @@ for r = 1, ROWS do
     local row = CreateFrame("Frame", nil, frame)
     row:SetWidth(300)
     row:SetHeight(54)
-    row:SetPoint("TOPLEFT", 18, -44 - (r - 1) * 58)
+    row:SetPoint("TOPLEFT", 18, TOP - (r - 1) * 58)
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     row.name:SetPoint("TOPLEFT", 0, -4)
     row.name:SetWidth(150)
@@ -160,7 +163,7 @@ local function Refresh()
     for _, skill in ipairs(PRIMARY) do
         if not learned[skill] then tinsert(list, { skill = skill, locked = true }) end
     end
-    local y = -44
+    local y = TOP
     for r = 1, ROWS do
         local p, row = list[r], rows[r]
         if p then
@@ -174,7 +177,7 @@ local function Refresh()
                 row.skill:SetText("")
                 row.stats:SetText("")
                 for s = 1, SLOTS do row.slots[s]:Hide() end
-                y = y - ROW_LOCKED - 2
+                y = y - ROW_LOCKED
             else
                 row:SetHeight(ROW_FULL)
                 row.name:SetTextColor(1, 0.82, 0)
@@ -201,7 +204,7 @@ local function Refresh()
                     end
                     b:Show()
                 end
-                y = y - ROW_FULL - 4
+                y = y - ROW_FULL - 2
             end
             row:Show()
         else
@@ -209,7 +212,7 @@ local function Refresh()
         end
     end
     empty:Hide()
-    frame:SetHeight(math.max(220, -y + 40))
+    frame:SetHeight(math.max(220, -y + 18))
 end
 
 -- ---------------------------------------------------------------- reagent bag
