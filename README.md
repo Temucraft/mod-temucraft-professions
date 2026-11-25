@@ -143,8 +143,10 @@ the character window) as a bag grid.
 - Chests and other objects opened with the generic "Opening" spells (3365, 6477, 6478, 22810, 26868) open at once.
   The release patch-T Spell.dbc has them instant too, so the cast bar matches. Battleground captures (21651, 8 s)
   and special quest objects (5 s) are not changed.
-- Herbs, ore veins and treasure chests always show on everyone's minimap: the tracking bits of Find Herbs, Find
+- Treasure chests always show on the minimap, and herbs and ore veins too: the tracking bits of Find Herbs, Find
   Minerals and Find Treasure are kept on (put back each second if a tracking change clears them).
+  `Temucraft.Treasures.Minimap`: 2 (default) herbs only for players with Herbalism and ore only for players with
+  Mining; 1 both for everyone (the old behaviour); 0 off (only the normal tracking spells).
 - They sparkle in the world, like quest objects, for players within 80 yards. The server tells each client this
   for the objects it can see (their dynamic flags); nothing changes in the database.
 - Dwarves: Treasure Finding is no longer a tracking spell everyone has for free. Dwarves get 20% more gold from any
