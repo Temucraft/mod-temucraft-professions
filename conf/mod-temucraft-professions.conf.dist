@@ -303,9 +303,11 @@ Temucraft.Quality.LuckTwoRanks = 5
 #        Default:     1
 #
 #    Temucraft.Treasures.Minimap
-#        Description: Herbs, ore veins and treasure chests always show on everyone's minimap, whatever tracking
-#                     is chosen.
-#        Default:     1
+#        Description: Treasure chests always show on the minimap, whatever tracking is chosen. Herbs and ore veins:
+#                     0 = only through the normal tracking spells (and chests are off too)
+#                     1 = always, for everyone
+#                     2 = always, but herbs only for players with Herbalism and ore only for players with Mining
+#        Default:     2
 #
 #    Temucraft.Treasures.Sparkle
 #        Description: Herbs, ore veins and treasure chests sparkle in the world (like quest objects) for players
@@ -321,7 +323,7 @@ Temucraft.Quality.LuckTwoRanks = 5
 #        Default:     20, 50
 
 Temucraft.Treasures.InstantOpen = 1
-Temucraft.Treasures.Minimap = 1
+Temucraft.Treasures.Minimap = 2
 Temucraft.Treasures.Sparkle = 1
 Temucraft.Treasures.SparkleRange = 80
 Temucraft.Treasures.Interval = 1000

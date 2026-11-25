@@ -8,7 +8,8 @@
 // Treasures, herbs and ore, closer to newer clients:
 // - Chests and other "Opening" objects open at once (the generic Opening spells are instant; the client's
 //   Spell.dbc in patch-T has the same change, so the cast bar matches). Battleground captures (8 s) are untouched.
-// - Herbs, ore veins and treasure chests always show on the minimap, for everyone, whatever tracking is chosen.
+// - Treasure chests always show on the minimap, whatever tracking is chosen; herbs and ore veins too, for everyone
+//   (Minimap = 1) or only for players with Herbalism / Mining (Minimap = 2, the default).
 // - They sparkle in the world (the sparkle quest objects have), for every player near them. Objects that are only
 //   there for a quest (quest loot, like Cactus Apple Surprise's apples) are left alone: the core sparkles those for
 //   players on the quest.
@@ -42,7 +43,7 @@ namespace
     struct Settings
     {
         bool instantOpen = true;
-        bool minimap = true;
+        uint32 minimap = 2;   // 0 off, 1 herbs/ore/treasure for everyone, 2 herbs/ore only with the profession
         bool sparkle = true;
         float sparkleRange = 80.0f;
         uint32 interval = 1000;
@@ -61,7 +62,7 @@ namespace
     void LoadSettings()
     {
         cfg.instantOpen = sConfigMgr->GetOption<bool>("Temucraft.Treasures.InstantOpen", true);
-        cfg.minimap = sConfigMgr->GetOption<bool>("Temucraft.Treasures.Minimap", true);
+        cfg.minimap = std::min<uint32>(2, sConfigMgr->GetOption<uint32>("Temucraft.Treasures.Minimap", 2));
         cfg.sparkle = sConfigMgr->GetOption<bool>("Temucraft.Treasures.Sparkle", true);
         cfg.sparkleRange = std::clamp(sConfigMgr->GetOption<float>("Temucraft.Treasures.SparkleRange", 80.0f), 10.0f, 200.0f);
         cfg.interval = std::max<uint32>(250, sConfigMgr->GetOption<uint32>("Temucraft.Treasures.Interval", 1000));
@@ -205,8 +206,20 @@ public:
 
         // herbs, ore and treasure on the minimap: the bits tracking spells set; put back if a tracking change
         // cleared them
-        if (cfg.minimap && (player->GetUInt32Value(PLAYER_TRACK_RESOURCES) & TRACK_MASK) != TRACK_MASK)
-            player->SetFlag(PLAYER_TRACK_RESOURCES, TRACK_MASK);
+        if (cfg.minimap)
+        {
+            uint32 wanted = TRACK_MASK;
+            if (cfg.minimap == 2)
+            {
+                wanted = 1u << (LOCKTYPE_TREASURE - 1);
+                if (player->HasSkill(SKILL_HERBALISM))
+                    wanted |= 1u << (LOCKTYPE_HERBALISM - 1);
+                if (player->HasSkill(SKILL_MINING))
+                    wanted |= 1u << (LOCKTYPE_MINING - 1);
+            }
+            if ((player->GetUInt32Value(PLAYER_TRACK_RESOURCES) & wanted) != wanted)
+                player->SetFlag(PLAYER_TRACK_RESOURCES, wanted);
+        }
 
         if (cfg.sparkle)
             UpdateSparkles(player, seen);
