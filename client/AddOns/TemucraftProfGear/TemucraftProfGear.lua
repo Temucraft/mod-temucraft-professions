@@ -514,7 +514,8 @@ frame:SetScript("OnShow", function() Send("GET"); Refresh() end)
 
 -- Alt-right-click in the bags: client bag 0 is the backpack (server bag 255, slots 23+), bags 1-4 are 19-22
 hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", function(self, button)
-    if button ~= "RightButton" or not IsAltKeyDown() then return end
+    -- not with Ctrl: Ctrl+Alt+right-click is the reagent bag hook above
+    if button ~= "RightButton" or not IsAltKeyDown() or IsControlKeyDown() then return end
     local bag, slot = self:GetParent():GetID(), self:GetID()
     if not GetContainerItemID(bag, slot) then return end
     local sbag, sslot
