@@ -143,6 +143,8 @@ the character window) as a bag grid.
   also from `.temucraft profgear` -> Reagent bag. Character setting `reagenttabs`.
 - Each tab holds `Temucraft.ReagentBag.Slots` stacks (28) of stackable trade goods, reagents and misc reagents (not limited or
   timed items). Tables `mod_temucraft_reagent_bag` and `mod_temucraft_character_setting` (setting `reagentbag`) (characters).
+- Deleting a character deletes its reagent bag and its `reagentbag`, `reagentbagnotice` and `reagenttabs` settings
+  (`OnPlayerDelete`; the core also runs this hook for a `CharDelete.Method = 1` unlink).
 
 ## Treasures, herbs and ore
 
@@ -169,3 +171,7 @@ the character window) as a bag grid.
   Each cast gives one more slot (the cast fails with a message when the character has them all).
 - GMs: `.temucraft profslots` shows the selected player's slots; `add`, `remove`, `set <n>` change the unlocked ones.
 - SQL: `mod_temucraft_profession_slots` (characters). RBAC 102754.
+- A character deleted for good (`OnPlayerDeleteFromDB`, in the same transaction as the core's own deletes; not a `CharDelete.Method = 1` unlink, which can be restored)
+  takes its `mod_temucraft_profession_slots` row with it.
+- `data/sql/db-characters/base/mod_temucraft_professions_character_cleanup.sql` removes profession slot rows and
+  reagent bag settings (`reagentbag`, `reagentbagnotice`, `reagenttabs`) of characters deleted before; safe to run again.
