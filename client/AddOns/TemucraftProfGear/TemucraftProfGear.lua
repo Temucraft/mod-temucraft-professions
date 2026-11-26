@@ -9,6 +9,10 @@
         to put it in; "Deposit reagents" moves every reagent from your bags
       - the trade skill window gets a "Reagent bag" button: takes what the recipe needs (times the number in the box)
     Everything is checked by the server; this panel only shows it (addon messages, prefix TPG).
+    Hosted: the Temucraft character window (mod-temucraft-client-version, TemucraftCharacter.lua) shows both panels
+    side by side on its Professions tab, in its own style: TemucraftProfGear_Host(parent) puts them in, (nil) takes
+    them out again. /profgear and alt-right-click open that tab; with the classic character panel they open the
+    stock character window's Professions tab (TemucraftProfGear_StockToggle) as before.
 --]]
 
 local PREFIX = "TPG"
@@ -20,6 +24,10 @@ local ROWS, SLOTS = 14, 3
 local PRIMARY = { 171, 164, 333, 202, 182, 773, 755, 165, 186, 393, 197 }
 local ROW_FULL, ROW_LOCKED = 54, 16
 local TOP = -84   -- the rows start under the title and the help text
+-- hosted (TemucraftProfGear_Host): shorter rows (name, skill and stats in three tight lines), the titles above the
+-- panels and the help text in its own line under them
+local ROW_COMPACT, TOP_HOSTED = 40, -8
+local hostParent = nil
 local SLOT_LABEL = { "Tool", "Accessory", "Accessory" }
 
 local professions = {}   -- { skill, value, max }
@@ -163,13 +171,18 @@ local function Refresh()
     for _, skill in ipairs(PRIMARY) do
         if not learned[skill] then tinsert(list, { skill = skill, locked = true }) end
     end
-    local y = TOP
+    local y = hostParent and TOP_HOSTED or TOP
+    local full = hostParent and ROW_COMPACT or ROW_FULL
     for r = 1, ROWS do
         local p, row = list[r], rows[r]
         if p then
             row:ClearAllPoints()
-            row:SetPoint("TOPLEFT", 18, y)
+            row:SetPoint("TOPLEFT", hostParent and 12 or 18, y)
             row.skillId, row.locked = p.skill, p.locked
+            row.skill:ClearAllPoints()
+            row.skill:SetPoint("TOPLEFT", 0, hostParent and -17 or -22)
+            row.stats:ClearAllPoints()
+            row.stats:SetPoint("TOPLEFT", 0, hostParent and -29 or -41)
             row.name:SetText(NAMES[p.skill] or ("Skill " .. p.skill))
             if p.locked then
                 row:SetHeight(ROW_LOCKED)
@@ -179,7 +192,7 @@ local function Refresh()
                 for s = 1, SLOTS do row.slots[s]:Hide() end
                 y = y - ROW_LOCKED
             else
-                row:SetHeight(ROW_FULL)
+                row:SetHeight(full)
                 row.name:SetTextColor(1, 0.82, 0)
                 row.skill:SetText(p.value .. " / " .. p.max)
                 local st = stats[p.skill]
@@ -204,7 +217,7 @@ local function Refresh()
                     end
                     b:Show()
                 end
-                y = y - ROW_FULL - 2
+                y = y - full - 2
             end
             row:Show()
         else
@@ -212,11 +225,15 @@ local function Refresh()
         end
     end
     empty:Hide()
-    frame:SetHeight(math.max(220, -y + 18))
+    if not hostParent then frame:SetHeight(math.max(220, -y + 18)) end
 end
 
 -- ---------------------------------------------------------------- reagent bag
 local COLS, BTN = 7, 37
+-- the bag's rows from its top: standalone (under its title) and hosted (its title is above the panel)
+local BAG_Y = { used = -36, tabs = -52, cells = -76, lock = -110 }
+local BAG_Y_HOSTED = { used = -12, tabs = -28, cells = -52, lock = -86 }
+local function BagY(k) return (hostParent and BAG_Y_HOSTED or BAG_Y)[k] end
 local reagent = { auto = true, slots = 28, used = 0, items = {}, incoming = nil, tabs = 1, maxTabs = 1, perTab = 28, nextGold = 0, minBag = 12 }
 local currentTab = 1
 
@@ -286,7 +303,7 @@ local function Cell(i)
     b:SetWidth(BTN)
     b:SetHeight(BTN)
     local col, row = (i - 1) % COLS, math.floor((i - 1) / COLS)
-    b:SetPoint("TOPLEFT", 16 + col * (BTN + 3), -76 - row * (BTN + 3))
+    b:SetPoint("TOPLEFT", 16 + col * (BTN + 3), BagY("cells") - row * (BTN + 3))
     b.icon = b:CreateTexture(nil, "ARTWORK")
     b.icon:SetAllPoints()
     b.bg = b:CreateTexture(nil, "BACKGROUND")
@@ -325,7 +342,15 @@ end
 function RefreshBag()
     local perTab = reagent.perTab or 28
     local rows = math.ceil(perTab / COLS)
-    rb:SetHeight(math.max(frame:GetHeight(), 140 + rows * (BTN + 3)))
+    if not hostParent then rb:SetHeight(math.max(frame:GetHeight(), 140 + rows * (BTN + 3))) end
+    rbUsed:ClearAllPoints()
+    rbUsed:SetPoint("TOP", 0, BagY("used"))
+    lockText:ClearAllPoints()
+    lockText:SetPoint("TOP", 0, BagY("lock"))
+    for i = 1, 4 do
+        tabButtons[i]:ClearAllPoints()
+        tabButtons[i]:SetPoint("TOPLEFT", 16 + (i - 1) * 68, BagY("tabs"))
+    end
     rbUsed:SetText(reagent.used .. " / " .. reagent.slots .. " slots")
     rbAuto:SetChecked(reagent.auto)
     rbNotice:SetChecked(reagent.notify ~= false)
@@ -376,6 +401,9 @@ function RefreshBag()
     local first = (currentTab - 1) * perTab
     for i = 1, perTab do
         local b, it = Cell(i), list[first + i]
+        local col, row = (i - 1) % COLS, math.floor((i - 1) / COLS)
+        b:ClearAllPoints()
+        b:SetPoint("TOPLEFT", 16 + col * (BTN + 3), BagY("cells") - row * (BTN + 3))
         if it then
             b.entry, b.stack, b.total = it.entry, it.n, it.total
             b.icon:SetTexture(GetItemIcon(it.entry) or "Interface\\Icons\\INV_Misc_QuestionMark")
@@ -524,7 +552,10 @@ hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", function(self, button
     local sbag, sslot
     if bag == 0 then sbag, sslot = 255, 22 + slot else sbag, sslot = 18 + bag, slot - 1 end
     Send("EQ " .. sbag .. " " .. sslot .. " 255")
-    if not frame:IsShown() then frame:Show() end
+    if not frame:IsShown() then
+        -- the Temucraft character window's Professions tab, else the panel on its own
+        if not (TemucraftCharacter_Open and TemucraftCharacter_Open("prof")) then frame:Show() end
+    end
 end)
 
 -- A "Professions" tab on the character window, after Character / Pets / Reputation / Skills / Currency. The panel
@@ -559,6 +590,7 @@ local function Embed(on)
 end
 
 local function ShowTab()
+    if hostParent then TemucraftProfGear_Host(nil) end
     for _, name in ipairs(CHARACTERFRAME_SUBFRAMES or {}) do
         local f = _G[name]
         if f then f:Hide() end
@@ -593,6 +625,90 @@ local function Toggle()
     if not CharacterFrame:IsShown() then ShowUIPanel(CharacterFrame) end
     ShowTab()
 end
+TemucraftProfGear_StockToggle = Toggle
 SLASH_TEMUCRAFTPROFGEAR1 = "/profgear"
-SlashCmdList["TEMUCRAFTPROFGEAR"] = Toggle
+-- the Temucraft character window's Professions tab (toggles), or the stock window's with the classic character panel
+SlashCmdList["TEMUCRAFTPROFGEAR"] = function()
+    if TemucraftCharacter_Open and TemucraftCharacter_Open("prof", true) then return end
+    Toggle()
+end
+
+-- ---------------------------------------------------------------- hosted in the Temucraft character window
+local STANDALONE_BACKDROP = frame:GetBackdrop()
+local HOSTED_BACKDROP = {
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true, tileSize = 16, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 },
+}
+local function Style(f, hosted)
+    if hosted and TemucraftCharacter_Inset then
+        TemucraftCharacter_Inset(f)   -- the character window's inset box
+    elseif hosted then
+        f:SetBackdrop(HOSTED_BACKDROP)
+        f:SetBackdropColor(0, 0, 0, 0.6)
+        f:SetBackdropBorderColor(0.5, 0.45, 0.35, 0.9)
+    else
+        f:SetBackdrop(STANDALONE_BACKDROP)
+        f:SetBackdropColor(1, 1, 1, 1)
+        f:SetBackdropBorderColor(1, 1, 1, 1)
+    end
+end
+
+-- parent: the character window's page (the panels fill it: equipment left, reagent bag right, the help text in its
+-- own line at the bottom), or nil to make the panel a window of its own again (hidden)
+function TemucraftProfGear_Host(parent)
+    if parent == hostParent then return true end
+    if parent and embedded then HideTab() end
+    hostParent = parent
+    frame:Hide()
+    frame:ClearAllPoints()
+    rb:ClearAllPoints()
+    title:ClearAllPoints()
+    rbTitle:ClearAllPoints()
+    hint:ClearAllPoints()
+    if parent then
+        frame:SetParent(parent)
+        frame:SetFrameStrata(parent:GetFrameStrata())
+        frame:SetFrameLevel(parent:GetFrameLevel() + 2)
+        rb:SetFrameStrata(parent:GetFrameStrata())
+        frame:SetPoint("TOPLEFT", parent, "TOPLEFT", 16, -64)
+        frame:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 16, 40)
+        frame:SetWidth(330)
+        rb:SetPoint("TOPLEFT", frame, "TOPRIGHT", 8, 0)
+        rb:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -16, 40)
+        title:SetFontObject(GameFontNormal)
+        title:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 6, 6)
+        rbTitle:SetFontObject(GameFontNormal)
+        rbTitle:SetPoint("BOTTOMLEFT", rb, "TOPLEFT", 6, 6)
+        hint:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 4, -8)
+        hint:SetPoint("TOPRIGHT", rb, "BOTTOMRIGHT", -4, -8)
+        hint:SetJustifyH("LEFT")
+        frame:SetMovable(false)
+        frame:RegisterForDrag()
+        close:Hide()
+    else
+        frame:SetParent(UIParent)
+        frame:SetFrameStrata("HIGH")
+        rb:SetFrameStrata("HIGH")
+        frame:SetPoint("CENTER", 200, 0)
+        frame:SetWidth(330)
+        rb:SetPoint("TOPLEFT", frame, "TOPRIGHT", -6, 0)
+        rb:SetWidth(COLS * (BTN + 3) + 30)
+        title:SetFontObject(GameFontNormalLarge)
+        title:SetPoint("TOP", 0, -18)
+        rbTitle:SetFontObject(GameFontNormalLarge)
+        rbTitle:SetPoint("TOP", 0, -18)
+        hint:SetPoint("TOP", title, "BOTTOM", 0, -6)
+        hint:SetWidth(290)
+        hint:SetJustifyH("CENTER")
+        frame:SetMovable(true)
+        frame:RegisterForDrag("LeftButton")
+        close:Show()
+    end
+    Style(frame, parent ~= nil)
+    Style(rb, parent ~= nil)
+    if parent then frame:Show() end
+    Refresh()
+    RefreshBag()
+    return true
+end
 if IsAddOnLoaded and IsAddOnLoaded("Blizzard_TradeSkillUI") then AddTradeSkillButton() end

@@ -46,6 +46,9 @@ taking it off gives the same item back. Worn equipment adds profession **skill**
 
 - `.temucraft profgear` opens a menu; the **TemucraftProfGear** addon (`client/AddOns`) adds a **Professions** tab to the
   character window (`/profgear`): alt-right-click equipment in your bags to wear it, right-click a slot to take it off.
+  With the Temucraft client (mod-temucraft-client-version) the Professions tab is a page of its one character window:
+  both panels side by side in its style, the help text in its own line under them (`TemucraftProfGear_Host`); with
+  its classic character panel the tab is on the stock character frame as before.
 - Equipment: `mod_temucraft_profgear_item`. The existing tools count as tools, plus a tool and an accessory per
   profession in three tiers: Proficient (skill 1), Expert (300) and Master (375), sold by the vendors who sell each
   profession's supplies (`tools/generate_profgear.py`, items 608700-608783).
