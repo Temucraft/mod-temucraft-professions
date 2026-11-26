@@ -9,10 +9,13 @@
         to put it in; "Deposit reagents" moves every reagent from your bags
       - the trade skill window gets a "Reagent bag" button: takes what the recipe needs (times the number in the box)
     Everything is checked by the server; this panel only shows it (addon messages, prefix TPG).
-    Hosted: the Temucraft character window (mod-temucraft-client-version, TemucraftCharacter.lua) shows both panels
-    side by side on its Professions tab, in its own style: TemucraftProfGear_Host(parent) puts them in, (nil) takes
-    them out again. /profgear and alt-right-click open that tab; with the classic character panel they open the
-    stock character window's Professions tab (TemucraftProfGear_StockToggle) as before.
+    Hosted: the Temucraft character window (mod-temucraft-client-version, TemucraftCharacter.lua) has its own
+    Professions page (every profession with its skill bar, stats and these slots, from the same TPG messages) and
+    shows this reagent bag as its Reagent Bag sub-tab: TemucraftProfGear_HostBag(parent) puts the bag in, (nil) gives
+    it back. With DragonUI's character window hosting that page (TemucraftCharacter_HostsProfessions()) this addon's
+    own Professions tab stays hidden. TemucraftProfGear_Host(parent) (both panels side by side) is kept for older
+    clients. /profgear and alt-right-click open the character window's Professions tab; with the classic character
+    panel they open the stock character window's Professions tab (TemucraftProfGear_StockToggle) as before.
 --]]
 
 local PREFIX = "TPG"
@@ -233,7 +236,8 @@ local COLS, BTN = 7, 37
 -- the bag's rows from its top: standalone (under its title) and hosted (its title is above the panel)
 local BAG_Y = { used = -36, tabs = -52, cells = -76, lock = -110 }
 local BAG_Y_HOSTED = { used = -12, tabs = -28, cells = -52, lock = -86 }
-local function BagY(k) return (hostParent and BAG_Y_HOSTED or BAG_Y)[k] end
+local bagHost = nil   -- TemucraftProfGear_HostBag: the bag alone in the Temucraft character window
+local function BagY(k) return ((hostParent or bagHost) and BAG_Y_HOSTED or BAG_Y)[k] end
 local reagent = { auto = true, slots = 28, used = 0, items = {}, incoming = nil, tabs = 1, maxTabs = 1, perTab = 28, nextGold = 0, minBag = 12 }
 local currentTab = 1
 
@@ -342,7 +346,7 @@ end
 function RefreshBag()
     local perTab = reagent.perTab or 28
     local rows = math.ceil(perTab / COLS)
-    if not hostParent then rb:SetHeight(math.max(frame:GetHeight(), 140 + rows * (BTN + 3))) end
+    if not hostParent and not bagHost then rb:SetHeight(math.max(frame:GetHeight(), 140 + rows * (BTN + 3))) end
     rbUsed:ClearAllPoints()
     rbUsed:SetPoint("TOP", 0, BagY("used"))
     lockText:ClearAllPoints()
@@ -566,6 +570,11 @@ PanelTemplates_TabResize(tab, 0)
 local embedded = false
 
 local function PlaceTab()
+    -- DragonUI's character window with the Temucraft Professions tab: that one shows the professions
+    if TemucraftCharacter_HostsProfessions and TemucraftCharacter_HostsProfessions() then
+        tab:Hide()
+        return
+    end
     local last
     for i = 1, 10 do
         local t = _G["CharacterFrameTab" .. i]
@@ -711,4 +720,41 @@ function TemucraftProfGear_Host(parent)
     RefreshBag()
     return true
 end
+
+-- the reagent bag alone in parent (the Temucraft character window's Professions page, its Reagent Bag sub-tab), in
+-- that window's style, or nil to give it back to this panel
+function TemucraftProfGear_HostBag(parent)
+    if parent == bagHost then
+        if parent then RefreshBag() end
+        return true
+    end
+    if parent and hostParent then TemucraftProfGear_Host(nil) end
+    if parent and embedded then HideTab() end
+    bagHost = parent
+    rb:ClearAllPoints()
+    rbTitle:ClearAllPoints()
+    if parent then
+        rb:SetParent(parent)
+        rb:SetFrameStrata(parent:GetFrameStrata())
+        rb:SetFrameLevel(parent:GetFrameLevel() + 2)
+        rb:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
+        rb:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 0)
+        rbTitle:Hide()
+        Style(rb, true)
+        rb:Show()
+        Send("GET")
+    else
+        rb:SetParent(frame)
+        rb:SetFrameStrata("HIGH")
+        rb:SetPoint("TOPLEFT", frame, "TOPRIGHT", -6, 0)
+        rb:SetWidth(COLS * (BTN + 3) + 30)
+        rbTitle:SetFontObject(GameFontNormalLarge)
+        rbTitle:SetPoint("TOP", 0, -18)
+        rbTitle:Show()
+        Style(rb, false)
+    end
+    RefreshBag()
+    return true
+end
+
 if IsAddOnLoaded and IsAddOnLoaded("Blizzard_TradeSkillUI") then AddTradeSkillButton() end
