@@ -8,6 +8,7 @@ void AddTemucraftReagentBagScripts();
 void AddTemucraftProfessionPerksScripts();
 void AddTemucraftTreasuresScripts();
 void AddTemucraftProfessionSlotsScripts();
+void AddTemucraftRacialStatsScripts();
 
 void Addmod_temucraft_professionsScripts()
 {
@@ -19,5 +20,6 @@ void Addmod_temucraft_professionsScripts()
     AddTemucraftReagentBagScripts();
     AddTemucraftProfessionPerksScripts();
     AddTemucraftProfessionSlotsScripts();   // 2 primary professions, more unlocked by spell up to MaxPrimaryTradeSkill
+    AddTemucraftRacialStatsScripts();   // profession stats from racials (mod_temucraft_profession_racial)
     AddTemucraftTreasuresScripts();   // instant chests, minimap and sparkle for herbs/ore/treasure, dwarves
 }

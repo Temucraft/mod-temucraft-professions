@@ -24,6 +24,11 @@ Prospector's Pick and Keen Skinning Knife. The stats are written in each new too
 - `mod_temucraft_gathering_rare`: rare reagents per skill and node level (gems per ore tier, Wildvine, Black Lotus,
   Fel Lotus, Frost Lotus, rare leathers and scales).
 - Deftness uses a hidden server-side aura (spell 95420) whose cast-time bonus only reaches gathering spells.
+- Racials add stats too (`mod_temucraft_profession_racial`, `Temucraft.Professions.RacialStats`): Cultivation (Tauren),
+  Flayer (Worgen) and Pride of Ironhorn (Highmountain Tauren) +25 Deftness on herbs, skins and ore, Hyper Productive
+  (Earthen) +25 Finesse, One With Nature (Haranir) +10 Finesse on herbs, Discerning Eye (Dracthyr) +2 Perception, also for
+  Multicraft and Resourcefulness if a row says so. Only racials the character knows count. The spells are
+  mod-temucraft-classes' best racial bonuses (`Temucraft.Racials.BestBonuses`).
 
 ### Crafting stats
 

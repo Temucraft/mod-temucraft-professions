@@ -21,6 +21,16 @@ Temucraft.Gathering.MaxFinesse = 75
 Temucraft.Gathering.MaxPerception = 50
 Temucraft.Gathering.MaxDeftness = 50
 
+#
+#    Temucraft.Professions.RacialStats
+#        Description: Racials give profession stats (mod_temucraft_profession_racial): Cultivation, Flayer and Pride
+#                     of Ironhorn +25 Deftness (herbs, skins, ore), Hyper Productive +25 Finesse, One With Nature +10
+#                     Finesse on herbs, Discerning Eye +2 Perception. The spells are mod-temucraft-classes' best
+#                     racial bonuses (Temucraft.Racials.BestBonuses); a character gets the stats of the racials it knows.
+#        Default:     1
+
+Temucraft.Professions.RacialStats = 1
+
 ########################################
 # Crafting stats (phase 2)
 ########################################

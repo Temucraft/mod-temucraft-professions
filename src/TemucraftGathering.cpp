@@ -14,6 +14,7 @@
  */
 #include "TemucraftKnowledge.h"
 #include "TemucraftProfGear.h"
+#include "TemucraftRacialStats.h"
 
 #include "Chat.h"
 #include "Config.h"
@@ -127,6 +128,10 @@ namespace
         s.finesse += TemucraftProfGearStat(player, skill, GEAR_FINESSE);
         s.perception += TemucraftProfGearStat(player, skill, GEAR_PERCEPTION);
         s.deftness += TemucraftProfGearStat(player, skill, GEAR_DEFTNESS);
+        // Racials (mod_temucraft_profession_racial): Cultivation, Flayer, Pride of Ironhorn, Hyper Productive...
+        s.finesse += TemucraftRacialProfStat(player, skill, GEAR_FINESSE);
+        s.perception += TemucraftRacialProfStat(player, skill, GEAR_PERCEPTION);
+        s.deftness += TemucraftRacialProfStat(player, skill, GEAR_DEFTNESS);
         // Specializations (.temucraft knowledge); the Deftness aura covers every gathering skill, so it takes the best one
         if (skill)
         {

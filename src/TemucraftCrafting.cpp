@@ -13,6 +13,7 @@
 #include "TemucraftModuleText.h"
 #include "TemucraftProfGear.h"
 #include "TemucraftQuality.h"
+#include "TemucraftRacialStats.h"
 
 #include "Chat.h"
 #include "Config.h"
@@ -110,6 +111,8 @@ namespace
         }
         multicraft += TemucraftProfGearStat(player, ability->SkillLine, GEAR_MULTICRAFT);
         resourcefulness += TemucraftProfGearStat(player, ability->SkillLine, GEAR_RESOURCEFULNESS);
+        multicraft += TemucraftRacialProfStat(player, ability->SkillLine, GEAR_MULTICRAFT);
+        resourcefulness += TemucraftRacialProfStat(player, ability->SkillLine, GEAR_RESOURCEFULNESS);
         multicraft += TemucraftSpecBonus(player, ability->SkillLine, PROF_STAT_MULTICRAFT);
         resourcefulness += TemucraftSpecBonus(player, ability->SkillLine, PROF_STAT_RESOURCEFULNESS);
         multicraft = std::clamp(multicraft, 0, sCraft.maxMulticraft);
@@ -208,6 +211,8 @@ void TemucraftCraftingStats(Player* player, uint32 skill, int32& multicraft, int
         }
     multicraft += TemucraftProfGearStat(player, skill, GEAR_MULTICRAFT);
     resourcefulness += TemucraftProfGearStat(player, skill, GEAR_RESOURCEFULNESS);
+    multicraft += TemucraftRacialProfStat(player, skill, GEAR_MULTICRAFT);
+    resourcefulness += TemucraftRacialProfStat(player, skill, GEAR_RESOURCEFULNESS);
     multicraft += TemucraftSpecBonus(player, skill, PROF_STAT_MULTICRAFT);
     resourcefulness += TemucraftSpecBonus(player, skill, PROF_STAT_RESOURCEFULNESS);
     multicraft = std::clamp(multicraft, 0, sCraft.maxMulticraft);
