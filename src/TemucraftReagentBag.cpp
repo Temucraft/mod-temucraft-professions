@@ -401,7 +401,8 @@ public:
     void OnPlayerDelete(ObjectGuid guid, uint32 /*account*/) override
     {
         CharacterDatabase.Execute("DELETE FROM `mod_temucraft_reagent_bag` WHERE `guid` = {}", guid.GetCounter());
-        CharacterDatabase.Execute("DELETE FROM `mod_temucraft_character_setting` WHERE `guid` = {} AND `setting` = 'reagentbag'", guid.GetCounter());
+        CharacterDatabase.Execute("DELETE FROM `mod_temucraft_character_setting` WHERE `guid` = {} AND `setting` IN ('reagentbag', 'reagentbagnotice', 'reagenttabs')",
+            guid.GetCounter());
     }
 
     void Queue(Player* player, Item* item, uint32 count)

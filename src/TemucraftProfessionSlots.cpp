@@ -217,10 +217,25 @@ public:
     }
 };
 
+// a deleted character's unlocked profession slots go with it
+// OnPlayerDeleteFromDB: only when the character is really removed (not a CharDelete.Method = 1 unlink, which can be
+// restored), and in the same transaction as the core's own deletes.
+class TemucraftProfessionSlots_Delete : public PlayerScript
+{
+public:
+    TemucraftProfessionSlots_Delete() : PlayerScript("TemucraftProfessionSlots_Delete", { PLAYERHOOK_ON_DELETE_FROM_DB }) { }
+
+    void OnPlayerDeleteFromDB(CharacterDatabaseTransaction trans, uint32 guid) override
+    {
+        trans->Append("DELETE FROM `mod_temucraft_profession_slots` WHERE `guid` = {}", guid);
+    }
+};
+
 void AddTemucraftProfessionSlotsScripts()
 {
     RegisterSpellScript(spell_temucraft_profession_slot);
     new TemucraftProfessionSlots_Player();
     new TemucraftProfessionSlots_Command();
     new TemucraftProfessionSlots_World();
+    new TemucraftProfessionSlots_Delete();
 }
